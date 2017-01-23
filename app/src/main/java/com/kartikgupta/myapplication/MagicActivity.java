@@ -3,11 +3,28 @@ package com.kartikgupta.myapplication;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.FrameLayout;
 
 import static android.support.v7.appcompat.R.id.info;
 
-public class CameraActivity extends AppCompatActivity {
+public class MagicActivity extends AppCompatActivity {
+    private final String TAG = MagicActivity.class.getSimpleName();
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG,"entering : onResume");
+
+        mCameraPreview.resume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG,"entering : onPause");
+        mCameraPreview.pause();
+    }
 
     Camera mCamera;
     CameraPreview mCameraPreview;

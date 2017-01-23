@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startCameraActivity() {
     //write code for starting camera preview
-        Intent intent = new Intent(MainActivity.this,CameraActivity.class);
+        Intent intent = new Intent(MainActivity.this,MagicActivity.class);
         startActivity(intent);
     }
 }
