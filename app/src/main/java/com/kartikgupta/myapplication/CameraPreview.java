@@ -5,7 +5,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.util.Base64;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -14,26 +14,18 @@ import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
 import com.koushikdutta.async.callback.DataCallback;
 import com.koushikdutta.async.http.AsyncHttpClient;
-import com.koushikdutta.async.http.AsyncHttpRequest;
 import com.koushikdutta.async.http.WebSocket;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import static android.R.attr.height;
-import static android.R.attr.width;
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by kartik on 15/1/17.
@@ -43,13 +35,23 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private String TAG = CameraPreview.class.getSimpleName();
+    private String mURL;
+    private Context mContext;
+    Camera.Parameters mParameters;
+    int mformat;
 
     private int mCounter;
 
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
+
         mCamera = camera;
+
+        mContext = context;
+
+        mParameters = camera.getParameters();
+        mformat = mParameters.getPreviewFormat();
 
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
@@ -61,6 +63,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
 
     public void surfaceCreated(SurfaceHolder holder) {
         mCounter=1;
+
         Log.d(TAG,"entering: surfaceCreated");
         // The Surface has been created, now tell the camera where to draw the preview.
         try {
@@ -129,8 +132,22 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
 
     private void sendFrameUsingSocket(final byte[] frame) {
         final byte[] temp=frame;
+        mURL = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getString(getResources().getString(R.string.pref_url_key),getResources().getString(R.string.pref_url_default));
 
-        AsyncHttpClient.getDefaultInstance().websocket("ws://10.20.1.25:8080", null, new AsyncHttpClient.WebSocketConnectCallback() {
+        int width = mParameters.getPreviewSize().width;
+        int height = mParameters.getPreviewSize().height;
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        //TODO: find and use the height and width variable and remove the hard coded values
+        YuvImage yuvImage = new YuvImage(frame, ImageFormat.NV21, width, height, null); //width : 768, height : 1280
+        yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out); //width : 768, height : 1280
+        final byte[] imageBytes = out.toByteArray();
+
+
+
+
+        AsyncHttpClient.getDefaultInstance().websocket(/*"ws://10.20.1.25:8080"*/mURL, null, new AsyncHttpClient.WebSocketConnectCallback() {
             @Override
             public void onCompleted(Exception ex, WebSocket webSocket) {
                 if (ex != null) {
@@ -138,7 +155,8 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
                     return;
                 }
                 webSocket.send("a string");
-                webSocket.send(new byte[20]);
+                Log.d(TAG,"Size of the frame is : " + imageBytes.length);
+                webSocket.send(imageBytes);
                // webSocket.send(new String(temp));
 
                 webSocket.setStringCallback(new WebSocket.StringCallback() {
