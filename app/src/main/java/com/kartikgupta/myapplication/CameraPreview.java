@@ -39,6 +39,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
     private Context mContext;
     Camera.Parameters mParameters;
     int mformat;
+    //private Display mDisplay;
 
     private int mCounter;
 
@@ -49,6 +50,8 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
         mCamera = camera;
 
         mContext = context;
+
+        //mDisplay = ((WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
         mParameters = camera.getParameters();
         mformat = mParameters.getPreviewFormat();
@@ -68,6 +71,10 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
         // The Surface has been created, now tell the camera where to draw the preview.
         try {
             mCamera.setPreviewDisplay(holder);
+
+            //TODO: Check if the following line is required or not
+            mCamera.setDisplayOrientation(90); //This is done to correct the orientation of the surfaceview. Which was otherwise
+                                                //coming rotated by an angle of 90 degrees.
             mCamera.startPreview();
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
@@ -101,6 +108,10 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
         try {
             mCamera.setPreviewCallback(this);
             mCamera.setPreviewDisplay(mHolder);
+
+            //TODO: Check if the following line is required or not
+            mCamera.setDisplayOrientation(90); //This is done to correct the orientation of the surfaceview. Which was otherwise
+                                                //coming rotated by an angle of 90 degrees.
             mCamera.startPreview();
         } catch (Exception e){
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
