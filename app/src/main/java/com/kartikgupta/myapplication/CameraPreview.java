@@ -13,6 +13,8 @@ import android.view.SurfaceView;
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
 import com.koushikdutta.async.callback.DataCallback;
+import com.koushikdutta.async.future.Future;
+import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.WebSocket;
 
@@ -32,6 +34,8 @@ import okhttp3.Response;
  */
 
 class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Camera.PreviewCallback {
+
+    private Future<WebSocket> mWebSocket;
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private String TAG = CameraPreview.class.getSimpleName();
@@ -62,6 +66,39 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
         mHolder.addCallback(this);
         // deprecated setting, but required on Android versions prior to 3.0
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        mURL = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getString(getResources().getString(R.string.pref_url_key),getResources().getString(R.string.pref_url_default));
+
+        initializeWebSocket();
+
+    }
+
+    private void initializeWebSocket() {
+        mWebSocket =  AsyncHttpClient.getDefaultInstance().websocket(/*"ws://10.20.1.25:8080"*/mURL, null, new AsyncHttpClient.WebSocketConnectCallback() {
+            @Override
+            public void onCompleted(Exception ex, WebSocket webSocket) {
+                if (ex != null) {
+                    ex.printStackTrace();
+                    return;
+                }
+                webSocket.send("a string");
+                         // webSocket.send(new String(temp));
+
+                webSocket.setStringCallback(new WebSocket.StringCallback() {
+                    public void onStringAvailable(String s) {
+                        System.out.println("I got a string: " + s);
+                    }
+                });
+                webSocket.setDataCallback(new DataCallback() {
+                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
+                        System.out.println("I got some bytes!");
+                        // note that this data has been read
+                        byteBufferList.recycle();
+                    }
+                });
+            }
+        });
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -146,8 +183,6 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
 
     private void sendFrameUsingSocket(final byte[] frame) {
         final byte[] temp=frame;
-        mURL = PreferenceManager.getDefaultSharedPreferences(mContext)
-                .getString(getResources().getString(R.string.pref_url_key),getResources().getString(R.string.pref_url_default));
 
         int width = mParameters.getPreviewSize().width;
         int height = mParameters.getPreviewSize().height;
@@ -158,35 +193,17 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback , Came
         yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out); //width : 768, height : 1280
         final byte[] imageBytes = out.toByteArray();
 
+        if(mWebSocket==null){initializeWebSocket();}
+        WebSocket webtemp = mWebSocket.tryGet();
+        if(webtemp!=null){mWebSocket.tryGet().send(imageBytes);
+        }
+
+
+//        Log.d(TAG,"Size of the frame is : " + imageBytes.length);
+  //      mWebSocket.send(imageBytes);
 
 
 
-        AsyncHttpClient.getDefaultInstance().websocket(/*"ws://10.20.1.25:8080"*/mURL, null, new AsyncHttpClient.WebSocketConnectCallback() {
-            @Override
-            public void onCompleted(Exception ex, WebSocket webSocket) {
-                if (ex != null) {
-                    ex.printStackTrace();
-                    return;
-                }
-                webSocket.send("a string");
-                Log.d(TAG,"Size of the frame is : " + imageBytes.length);
-                webSocket.send(imageBytes);
-               // webSocket.send(new String(temp));
-
-                webSocket.setStringCallback(new WebSocket.StringCallback() {
-                    public void onStringAvailable(String s) {
-                        System.out.println("I got a string: " + s);
-                    }
-                });
-                webSocket.setDataCallback(new DataCallback() {
-                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
-                        System.out.println("I got some bytes!");
-                        // note that this data has been read
-                        byteBufferList.recycle();
-                    }
-                });
-            }
-        });
     }
 
 
