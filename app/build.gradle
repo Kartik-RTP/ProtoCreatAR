@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId 'com.kartikgupta.protocreatar'
         minSdkVersion 18
@@ -21,10 +21,26 @@ android {
     }
 }
 
+//added for now only to reolve artoolkit library import
+allprojects {
+    repositories {
+        jcenter()
+        flatDir {
+            dirs 'lib'
+        }
+    }
+}
+///wooho its working
+// see http://stackoverflow.com/questions/16682847/how-to-manually-include-external-aar-package-using-new-gradle-android-build-syst
+//for more details
+
+
 dependencies {
+    compile(name:'aRBaseLib-release', ext:'aar') //included arbaselib through ths statement
+
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
     compile 'com.android.support:design:23.3.0'
-    compile 'com.koushikdutta.async:androidasync:2.+'
+    compile 'com.koushikdutta.async:androidasync:2.1.6'
 
 
     compile fileTree(include: ['*.jar'], dir: 'libs')
