@@ -9,6 +9,7 @@
 
 
     <application
+        android:name = ".CreatARApplication"
         android:screenOrientation="portrait"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -23,10 +24,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".MagicActivity"
+        <activity android:name=".depracatedForNow.MagicActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
+
+        <activity android:name=".NewMagicActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+        </activity>
+
         <activity
             android:screenOrientation="portrait"
             android:name=".SettingsActivity"

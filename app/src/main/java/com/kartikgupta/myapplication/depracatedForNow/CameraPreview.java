@@ -1,4 +1,4 @@
-package com.kartikgupta.myapplication;
+package com.kartikgupta.myapplication.depracatedForNow;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -10,11 +10,11 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.kartikgupta.myapplication.R;
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
 import com.koushikdutta.async.callback.DataCallback;
 import com.koushikdutta.async.future.Future;
-import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.WebSocket;
 
