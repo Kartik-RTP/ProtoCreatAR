@@ -10,19 +10,19 @@ import org.artoolkit.ar.base.assets.AssetHelper;
 
 public class CreatARApplication extends Application {
 
-    private static Application mInstance;
+    private static Application sInstance;
 
     // Anywhere in the application where an instance is required, this method
     // can be used to retrieve it.
     public static Application getInstance() {
-        return mInstance;
+        return sInstance;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mInstance = this;
-        ((CreatARApplication) mInstance).initializeInstance();
+        sInstance = this;
+        ((CreatARApplication) sInstance).initializeInstance();
     }
 
     // Here we do one-off initialisation which should apply to all activities

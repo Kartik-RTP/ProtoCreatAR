@@ -19,7 +19,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by kartik on 17/4/17.
  */
 
-class SperoRenderer extends ARRendererGLES20 {
+public class SperoRenderer extends ARRendererGLES20 {
 
     private int markerID = -1;
     private CubeGLES20 cube;
