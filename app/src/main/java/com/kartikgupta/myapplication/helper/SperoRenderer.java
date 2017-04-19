@@ -4,20 +4,34 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.opengl.GLES20;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.FrameLayout;
 
 import com.kartikgupta.myapplication.NewMagicActivity;
+import com.kartikgupta.myapplication.R;
 import com.kartikgupta.myapplication.helper.shader.SimpleFragmentShader;
 import com.kartikgupta.myapplication.helper.shader.SimpleShaderProgram;
 import com.kartikgupta.myapplication.helper.shader.SimpleVertexShader;
+import com.koushikdutta.async.ByteBufferList;
+import com.koushikdutta.async.DataEmitter;
+import com.koushikdutta.async.callback.DataCallback;
+import com.koushikdutta.async.future.Future;
+import com.koushikdutta.async.http.AsyncHttpClient;
+import com.koushikdutta.async.http.WebSocket;
 
 import org.artoolkit.ar.base.ARToolKit;
+import org.artoolkit.ar.base.camera.CameraPreferencesActivity;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
+
+import java.io.ByteArrayOutputStream;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -38,16 +52,28 @@ public class SperoRenderer extends ARRendererGLES20 {
 
     private Context mContext;
     private byte[] mCameraData;
+    private int mCameraWidth;
+    private int mCameraHeight;
     private static final String CAMERA_PREVIEW_FEED_INTENT = "camera_preview_feed_intent";
     private static final String CAMERA_FEED_DATA = "camera_feed_data";
+    private static final String CAMERA_PARAM_HEIGHT = "camera_param_height";
+    private static final String CAMERA_PARAM_WIDTH = "camera_param_width";
+
+
+
+    private Future<WebSocket> mWebSocket;
+    private String mURL;
 
     BroadcastReceiver mBroadcastRecever = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             mCameraData=intent.getByteArrayExtra(CAMERA_FEED_DATA);
+            mCameraWidth = intent.getIntExtra(CAMERA_PARAM_WIDTH,0);
+            mCameraHeight=intent.getIntExtra(CAMERA_PARAM_HEIGHT,0); //note that 0 will mean error eventualylly
             Log.d(TAG,"getting camera feed data");
         }
     };
+    private int mCounter=0;
 
     public SperoRenderer(Context context) {
         mContext = context;
@@ -85,7 +111,71 @@ public class SperoRenderer extends ARRendererGLES20 {
         ShaderProgram shaderProgram = new SimpleShaderProgram(new SimpleVertexShader(), new SimpleFragmentShader());
         cube = new CubeGLES20(40.0f, 0.0f, 0.0f, 20.0f);
         cube.setShaderProgram(shaderProgram);
+
+        mURL = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getString(mContext.getResources().getString(R.string.pref_url_key),mContext.getResources().getString(R.string.pref_url_default));
+
+        initializeWebSocket();
+
     }
+
+    private void initializeWebSocket() {
+        mWebSocket =  AsyncHttpClient.getDefaultInstance().websocket(/*"ws://10.20.1.25:8080"*/mURL, null, new AsyncHttpClient.WebSocketConnectCallback() {
+            @Override
+            public void onCompleted(Exception ex, WebSocket webSocket) {
+                if (ex != null) {
+                    ex.printStackTrace();
+                    return;
+                }
+                webSocket.send("a string");
+                // webSocket.send(new String(temp));
+
+                webSocket.setStringCallback(new WebSocket.StringCallback() {
+                    public void onStringAvailable(String s) {
+                        System.out.println("I got a string: " + s);
+                    }
+                });
+                webSocket.setDataCallback(new DataCallback() {
+                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
+                        System.out.println("I got some bytes!");
+                        // note that this data has been read
+                        byteBufferList.recycle();
+                    }
+                });
+            }
+        });
+    }
+
+    private void sendFrameUsingSocket(final byte[] frame) {
+        final byte[] temp=frame;
+
+
+        int width = mCameraWidth;
+        int height = mCameraHeight;
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        //TODO: find and use the height and width variable and remove the hard coded values
+        YuvImage yuvImage = new YuvImage(frame, ImageFormat.NV21, width, height, null); //width : 768, height : 1280
+        yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out); //width : 768, height : 1280
+        final byte[] imageBytes = out.toByteArray();
+
+        if(mWebSocket==null || mWebSocket.isCancelled()){initializeWebSocket();}
+                
+        WebSocket webtemp = mWebSocket.tryGet();
+        if(webtemp!=null){mWebSocket.tryGet().send(imageBytes);
+            Log.d(TAG,"trying to send bytes");
+        }
+
+
+//        Log.d(TAG,"Size of the frame is : " + imageBytes.length);
+        //      mWebSocket.send(imageBytes);
+
+
+
+    }
+
+
+
 
     /**
      * Override the render function from {@link ARRendererGLES20}.
@@ -103,6 +193,12 @@ public class SperoRenderer extends ARRendererGLES20 {
         // If the marker is visible, apply its transformation, and render a cube
         if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
             cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));
+            mCounter=0;
+        }else if(mCounter>100){
+            sendFrameUsingSocket(mCameraData);
+            mCounter=0;
+        }else{
+            mCounter++;
         }
     }
 }
