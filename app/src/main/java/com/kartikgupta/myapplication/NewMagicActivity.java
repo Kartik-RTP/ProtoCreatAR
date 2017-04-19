@@ -7,6 +7,7 @@ import com.kartikgupta.myapplication.helper.BaseMagicActivity;
 import com.kartikgupta.myapplication.helper.SperoRenderer;
 
 import org.artoolkit.ar.base.ARActivity;
+import org.artoolkit.ar.base.camera.CameraEventListener;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 /**
@@ -29,7 +30,7 @@ public class NewMagicActivity  extends ARActivity{
      */
     @Override
     protected ARRenderer supplyRenderer() {
-        return new SperoRenderer();
+        return new SperoRenderer(this);
     }
 
     /**
@@ -39,4 +40,5 @@ public class NewMagicActivity  extends ARActivity{
     protected FrameLayout supplyFrameLayout() {
         return (FrameLayout) this.findViewById(R.id.mainLayout);
     }
+
 }

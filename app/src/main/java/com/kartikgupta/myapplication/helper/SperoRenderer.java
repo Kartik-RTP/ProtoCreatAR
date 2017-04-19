@@ -1,8 +1,15 @@
 package com.kartikgupta.myapplication.helper;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.opengl.GLES20;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.widget.FrameLayout;
 
+import com.kartikgupta.myapplication.NewMagicActivity;
 import com.kartikgupta.myapplication.helper.shader.SimpleFragmentShader;
 import com.kartikgupta.myapplication.helper.shader.SimpleShaderProgram;
 import com.kartikgupta.myapplication.helper.shader.SimpleVertexShader;
@@ -15,6 +22,8 @@ import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * Created by kartik on 17/4/17.
  */
@@ -23,6 +32,26 @@ public class SperoRenderer extends ARRendererGLES20 {
 
     private int markerID = -1;
     private CubeGLES20 cube;
+
+    private final String TAG = SperoRenderer.class.getSimpleName();
+    //from arbase lib
+
+    private Context mContext;
+    private byte[] mCameraData;
+    private static final String CAMERA_PREVIEW_FEED_INTENT = "camera_preview_feed_intent";
+    private static final String CAMERA_FEED_DATA = "camera_feed_data";
+
+    BroadcastReceiver mBroadcastRecever = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mCameraData=intent.getByteArrayExtra(CAMERA_FEED_DATA);
+            Log.d(TAG,"getting camera feed data");
+        }
+    };
+
+    public SperoRenderer(Context context) {
+        mContext = context;
+    }
 
     /**
      * This method gets called from the framework to setup the ARScene.
@@ -38,6 +67,13 @@ public class SperoRenderer extends ARRendererGLES20 {
         if (markerID < 0) return false;
 
         return true;
+    }
+
+    @Override
+    public void onSurfaceChanged(GL10 unused, int w, int h) {
+        super.onSurfaceChanged(unused, w, h);
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mBroadcastRecever,
+                new IntentFilter(CAMERA_PREVIEW_FEED_INTENT));
     }
 
     //Shader calls should be within a GL thread that is onSurfaceChanged(), onSurfaceCreated() or onDrawFrame()

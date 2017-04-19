@@ -1,1 +1,1 @@
-include ':app', ':aRBaseLib-release'
+include ':app', ':aRBaseLib-debug'

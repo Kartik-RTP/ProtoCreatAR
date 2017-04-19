@@ -12,7 +12,7 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 public class BaseMagicActivity extends ARActivity {
     @Override
     protected ARRenderer supplyRenderer() {
-        return new SperoRenderer();
+        return new SperoRenderer(this);
     }
 
     @Override

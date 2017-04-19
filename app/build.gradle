@@ -36,17 +36,15 @@ allprojects {
 
 
 dependencies {
-    compile(name:'aRBaseLib-release', ext:'aar') //included arbaselib through ths statement
-
+    //included arbaselib through ths statement
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
     compile 'com.android.support:design:23.3.0'
     compile 'com.koushikdutta.async:androidasync:2.1.6'
-
-
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:23.3.0'
     testCompile 'junit:junit:4.12'
+    compile project(':aRBaseLib-debug')
 }
