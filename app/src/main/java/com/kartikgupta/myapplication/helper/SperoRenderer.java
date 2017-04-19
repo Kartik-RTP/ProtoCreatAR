@@ -13,6 +13,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.FrameLayout;
 
+import com.kartikgupta.myapplication.MagicData;
 import com.kartikgupta.myapplication.NewMagicActivity;
 import com.kartikgupta.myapplication.R;
 import com.kartikgupta.myapplication.helper.shader.SimpleFragmentShader;
@@ -32,6 +33,7 @@ import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -44,6 +46,8 @@ import static android.content.ContentValues.TAG;
 
 public class SperoRenderer extends ARRendererGLES20 {
 
+
+    private static final int NO_OF_FRAMES_TO_SKIP = 100; //this many frames get skipped before sending a frame to server
     private int markerID = -1;
     private CubeGLES20 cube;
 
@@ -138,6 +142,12 @@ public class SperoRenderer extends ARRendererGLES20 {
                 webSocket.setDataCallback(new DataCallback() {
                     public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
                         System.out.println("I got some bytes!");
+                        try {
+                            MagicData.Marker m = MagicData.Marker.ADAPTER.decode(byteBufferList.getAllByteArray());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Log.d(TAG,"unable to decode messageMagicData");
+                        }
                         // note that this data has been read
                         byteBufferList.recycle();
                     }
@@ -160,7 +170,7 @@ public class SperoRenderer extends ARRendererGLES20 {
         final byte[] imageBytes = out.toByteArray();
 
         if(mWebSocket==null || mWebSocket.isCancelled()){initializeWebSocket();}
-                
+
         WebSocket webtemp = mWebSocket.tryGet();
         if(webtemp!=null){mWebSocket.tryGet().send(imageBytes);
             Log.d(TAG,"trying to send bytes");
@@ -194,7 +204,7 @@ public class SperoRenderer extends ARRendererGLES20 {
         if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
             cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));
             mCounter=0;
-        }else if(mCounter>100){
+        }else if(mCounter>NO_OF_FRAMES_TO_SKIP){
             sendFrameUsingSocket(mCameraData);
             mCounter=0;
         }else{
