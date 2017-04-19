@@ -9,9 +9,11 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.opengl.GLES20;
 import android.preference.PreferenceManager;
+import android.support.annotation.UiThread;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.kartikgupta.myapplication.MagicData;
 import com.kartikgupta.myapplication.NewMagicActivity;
@@ -144,6 +146,7 @@ public class SperoRenderer extends ARRendererGLES20 {
                         System.out.println("I got some bytes!");
                         try {
                             MagicData.Marker m = MagicData.Marker.ADAPTER.decode(byteBufferList.getAllByteArray());
+                            processMagicData(m);
                         } catch (IOException e) {
                             e.printStackTrace();
                             Log.d(TAG,"unable to decode messageMagicData");
@@ -154,6 +157,11 @@ public class SperoRenderer extends ARRendererGLES20 {
                 });
             }
         });
+    }
+
+    private void processMagicData(MagicData.Marker m) {
+        Log.d(TAG,"REcieved some magic :"+m.fset.toString());
+        //Toast.makeText(mContext,"REcieved some magic :"+m.fset.toString(),Toast.LENGTH_LONG);
     }
 
     private void sendFrameUsingSocket(final byte[] frame) {
