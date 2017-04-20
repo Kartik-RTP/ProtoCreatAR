@@ -145,8 +145,8 @@ public class SperoRenderer extends ARRendererGLES20 {
                     public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
                         System.out.println("I got some bytes!");
                         try {
-                            MagicData.Marker m = MagicData.Marker.ADAPTER.decode(byteBufferList.getAllByteArray());
-                            processMagicData(m);
+                            MagicData magicData  = MagicData.ADAPTER.decode(byteBufferList.getAllByteArray());
+                            processMagicData(magicData);
                         } catch (IOException e) {
                             e.printStackTrace();
                             Log.d(TAG,"unable to decode messageMagicData");
@@ -159,9 +159,17 @@ public class SperoRenderer extends ARRendererGLES20 {
         });
     }
 
-    private void processMagicData(MagicData.Marker m) {
-        Log.d(TAG,"REcieved some magic :"+m.fset.toString());
+    private void processMagicData(MagicData magicData) {
+        //need to copy iset , fset and fset3 files to assets/DataNFT foler
+
+        Log.d(TAG,"Recieved some magic ");
+        copyMarkerFilesToAsset(magicData.marker);
+
         //Toast.makeText(mContext,"REcieved some magic :"+m.fset.toString(),Toast.LENGTH_LONG);
+    }
+
+    private void copyMarkerFilesToAsset(MagicData.Marker marker) {
+
     }
 
     private void sendFrameUsingSocket(final byte[] frame) {
@@ -208,6 +216,7 @@ public class SperoRenderer extends ARRendererGLES20 {
 
         float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
 
+        doSomeTestingStuff();//delete this line later on
         // If the marker is visible, apply its transformation, and render a cube
         if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
             cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));
@@ -218,5 +227,10 @@ public class SperoRenderer extends ARRendererGLES20 {
         }else{
             mCounter++;
         }
+    }
+
+    private void doSomeTestingStuff() {
+        Log.d(TAG,mContext.getFilesDir().toString());
+        Log.d(TAG,mContext.fileList().toString());
     }
 }
