@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
@@ -35,10 +36,14 @@ import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import okio.ByteString;
 
 import static android.content.ContentValues.TAG;
 
@@ -93,7 +98,7 @@ public class SperoRenderer extends ARRendererGLES20 {
     @Override
     public boolean configureARScene() {
         markerID = ARToolKit.getInstance().addMarker("single;Data/hiro.patt;80");
-        markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
+        //markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
 
 
         if (markerID < 0) return false;
@@ -165,11 +170,40 @@ public class SperoRenderer extends ARRendererGLES20 {
         Log.d(TAG,"Recieved some magic ");
         copyMarkerFilesToAsset(magicData.marker);
 
+        //FileUtils.writeByteArrayToFile(new File("pathname"), myByteArray)
+
+
         //Toast.makeText(mContext,"REcieved some magic :"+m.fset.toString(),Toast.LENGTH_LONG);
     }
 
     private void copyMarkerFilesToAsset(MagicData.Marker marker) {
 
+        doSomeTestingStuff();
+        try {
+            Log.d(TAG,"copying new marker content to cache");
+            writeFileToCache(marker.fset,marker.markerName+".fset");
+            writeFileToCache(marker.fset3,marker.markerName+".fset3");
+            writeFileToCache(marker.iset,marker.markerName+".iset");
+            doSomeTestingStuff();
+            markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void writeFileToCache(ByteString fileData, String fileNameWithExtension) throws IOException {
+        File cacheDirFile = mContext.getCacheDir();
+        File DataNFTFile = null;
+        for(File file : cacheDirFile.listFiles()){
+            if(file.getName().toString().equals("DataNFT")){
+                DataNFTFile = file;
+            }
+        }
+        String path = DataNFTFile.getAbsolutePath()+File.separator+fileNameWithExtension;
+
+        FileOutputStream fos = new FileOutputStream(path);
+        fos.write(fileData.toByteArray());
+        fos.close();
     }
 
     private void sendFrameUsingSocket(final byte[] frame) {
@@ -216,7 +250,7 @@ public class SperoRenderer extends ARRendererGLES20 {
 
         float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
 
-        doSomeTestingStuff();//delete this line later on
+       // doSomeTestingStuff();//delete this line later on
         // If the marker is visible, apply its transformation, and render a cube
         if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
             cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));
@@ -230,7 +264,16 @@ public class SperoRenderer extends ARRendererGLES20 {
     }
 
     private void doSomeTestingStuff() {
-        Log.d(TAG,mContext.getFilesDir().toString());
-        Log.d(TAG,mContext.fileList().toString());
+        Log.d(TAG,mContext.getCacheDir().toString());
+        for(File file:mContext.getCacheDir().listFiles()){
+            Log.d(TAG,file.getName().toString());
+            if(file.getName().toString().equals("DataNFT")){
+                for(File file1 : file.listFiles()){
+                    Log.d(TAG,file1.getName().toString());
+                    //getting the various marker file names , now I need to see f i can write a new file to it.
+                }
+            }
+        }
+
     }
 }
