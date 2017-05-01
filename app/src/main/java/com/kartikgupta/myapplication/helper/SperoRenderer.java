@@ -65,6 +65,8 @@ public class SperoRenderer extends ARRendererGLES20 {
     private byte[] mCameraData;
     private int mCameraWidth;
     private int mCameraHeight;
+    private AssetCacheHelper mAssetCacheHelper ;
+
     private static final String CAMERA_PREVIEW_FEED_INTENT = "camera_preview_feed_intent";
     private static final String CAMERA_FEED_DATA = "camera_feed_data";
     private static final String CAMERA_PARAM_HEIGHT = "camera_param_height";
@@ -88,6 +90,7 @@ public class SperoRenderer extends ARRendererGLES20 {
 
     public SperoRenderer(Context context) {
         mContext = context;
+        mAssetCacheHelper = new AssetCacheHelper(mContext);
     }
 
     /**
@@ -168,43 +171,16 @@ public class SperoRenderer extends ARRendererGLES20 {
         //need to copy iset , fset and fset3 files to assets/DataNFT foler
 
         Log.d(TAG,"Recieved some magic ");
-        copyMarkerFilesToAsset(magicData.marker);
+        markerID = mAssetCacheHelper.copyMarkerFilesToAssetAndReturnID(magicData.marker);
+        if(markerID<0){Log.d(TAG,"copying marker to asset cache failed");}
 
+
+
+        //copyMarkerFilesToAsset(magicData.marker);
         //FileUtils.writeByteArrayToFile(new File("pathname"), myByteArray)
-
-
         //Toast.makeText(mContext,"REcieved some magic :"+m.fset.toString(),Toast.LENGTH_LONG);
     }
 
-    private void copyMarkerFilesToAsset(MagicData.Marker marker) {
-
-        doSomeTestingStuff();
-        try {
-            Log.d(TAG,"copying new marker content to cache");
-            writeFileToCache(marker.fset,marker.markerName+".fset");
-            writeFileToCache(marker.fset3,marker.markerName+".fset3");
-            writeFileToCache(marker.iset,marker.markerName+".iset");
-            doSomeTestingStuff();
-            markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void writeFileToCache(ByteString fileData, String fileNameWithExtension) throws IOException {
-        File cacheDirFile = mContext.getCacheDir();
-        File DataNFTFile = null;
-        for(File file : cacheDirFile.listFiles()){
-            if(file.getName().toString().equals("DataNFT")){
-                DataNFTFile = file;
-            }
-        }
-        String path = DataNFTFile.getAbsolutePath()+File.separator+fileNameWithExtension;
-
-        FileOutputStream fos = new FileOutputStream(path);
-        fos.write(fileData.toByteArray());
-        fos.close();
-    }
 
     private void sendFrameUsingSocket(final byte[] frame) {
         final byte[] temp=frame;
