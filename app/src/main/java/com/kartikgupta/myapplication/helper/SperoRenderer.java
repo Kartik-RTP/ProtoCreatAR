@@ -4,48 +4,29 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetManager;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.opengl.GLES20;
-import android.preference.PreferenceManager;
-import android.support.annotation.UiThread;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.kartikgupta.myapplication.MagicData;
-import com.kartikgupta.myapplication.NewMagicActivity;
-import com.kartikgupta.myapplication.R;
 import com.kartikgupta.myapplication.helper.shader.SimpleFragmentShader;
 import com.kartikgupta.myapplication.helper.shader.SimpleShaderProgram;
 import com.kartikgupta.myapplication.helper.shader.SimpleVertexShader;
-import com.koushikdutta.async.ByteBufferList;
-import com.koushikdutta.async.DataEmitter;
-import com.koushikdutta.async.callback.DataCallback;
-import com.koushikdutta.async.future.Future;
-import com.koushikdutta.async.http.AsyncHttpClient;
-import com.koushikdutta.async.http.WebSocket;
 
 import org.artoolkit.ar.base.ARToolKit;
-import org.artoolkit.ar.base.camera.CameraPreferencesActivity;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import okio.ByteString;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by kartik on 17/4/17.
@@ -66,18 +47,20 @@ public class SperoRenderer extends ARRendererGLES20 {
     private int mCameraWidth;
     private int mCameraHeight;
     private AssetCacheHelper mAssetCacheHelper ;
+    private NetworkConnection mConnection;
 
     private static final String CAMERA_PREVIEW_FEED_INTENT = "camera_preview_feed_intent";
     private static final String CAMERA_FEED_DATA = "camera_feed_data";
     private static final String CAMERA_PARAM_HEIGHT = "camera_param_height";
     private static final String CAMERA_PARAM_WIDTH = "camera_param_width";
+    private static final String RECIEVED_MAGIC_BYTES = "recieved_magic_bytes" ;
+    private static final String MAGIC_DATA = "magic_data";
 
 
 
-    private Future<WebSocket> mWebSocket;
-    private String mURL;
 
-    BroadcastReceiver mBroadcastRecever = new BroadcastReceiver() {
+
+    BroadcastReceiver mCameraFrameDataBroadcastRecever = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             mCameraData=intent.getByteArrayExtra(CAMERA_FEED_DATA);
@@ -86,11 +69,21 @@ public class SperoRenderer extends ARRendererGLES20 {
             Log.d(TAG,"getting camera feed data");
         }
     };
+
+    BroadcastReceiver mMagicDataBroadcastRecever = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            processMagicDataBytes(intent.getByteArrayExtra(MAGIC_DATA));
+        }
+    };
+
+
     private int mCounter=0;
 
     public SperoRenderer(Context context) {
         mContext = context;
         mAssetCacheHelper = new AssetCacheHelper(mContext);
+        mConnection = new NetworkConnection(mContext);
     }
 
     /**
@@ -100,10 +93,9 @@ public class SperoRenderer extends ARRendererGLES20 {
      */
     @Override
     public boolean configureARScene() {
+
         markerID = ARToolKit.getInstance().addMarker("single;Data/hiro.patt;80");
         //markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
-
-
         if (markerID < 0) return false;
 
         return true;
@@ -112,8 +104,10 @@ public class SperoRenderer extends ARRendererGLES20 {
     @Override
     public void onSurfaceChanged(GL10 unused, int w, int h) {
         super.onSurfaceChanged(unused, w, h);
-        LocalBroadcastManager.getInstance(mContext).registerReceiver(mBroadcastRecever,
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mCameraFrameDataBroadcastRecever,
                 new IntentFilter(CAMERA_PREVIEW_FEED_INTENT));
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMagicDataBroadcastRecever,
+                new IntentFilter(RECIEVED_MAGIC_BYTES));
     }
 
     //Shader calls should be within a GL thread that is onSurfaceChanged(), onSurfaceCreated() or onDrawFrame()
@@ -121,71 +115,42 @@ public class SperoRenderer extends ARRendererGLES20 {
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         super.onSurfaceCreated(unused, config);
+        mConnection.initializeConnection();
+
 
         ShaderProgram shaderProgram = new SimpleShaderProgram(new SimpleVertexShader(), new SimpleFragmentShader());
         cube = new CubeGLES20(40.0f, 0.0f, 0.0f, 20.0f);
         cube.setShaderProgram(shaderProgram);
 
-        mURL = PreferenceManager.getDefaultSharedPreferences(mContext)
-                .getString(mContext.getResources().getString(R.string.pref_url_key),mContext.getResources().getString(R.string.pref_url_default));
 
-        initializeWebSocket();
 
     }
 
-    private void initializeWebSocket() {
-        mWebSocket =  AsyncHttpClient.getDefaultInstance().websocket(/*"ws://10.20.1.25:8080"*/mURL, null, new AsyncHttpClient.WebSocketConnectCallback() {
-            @Override
-            public void onCompleted(Exception ex, WebSocket webSocket) {
-                if (ex != null) {
-                    ex.printStackTrace();
-                    return;
-                }
-                webSocket.send("a string");
-                // webSocket.send(new String(temp));
-
-                webSocket.setStringCallback(new WebSocket.StringCallback() {
-                    public void onStringAvailable(String s) {
-                        System.out.println("I got a string: " + s);
-                    }
-                });
-                webSocket.setDataCallback(new DataCallback() {
-                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
-                        System.out.println("I got some bytes!");
-                        try {
-                            MagicData magicData  = MagicData.ADAPTER.decode(byteBufferList.getAllByteArray());
-                            processMagicData(magicData);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Log.d(TAG,"unable to decode messageMagicData");
-                        }
-                        // note that this data has been read
-                        byteBufferList.recycle();
-                    }
-                });
-            }
-        });
+    private void processMagicDataBytes(byte[] byteArrayExtra) {
+        try {
+            MagicData.Marker marker = MagicData.Marker.ADAPTER.decode(byteArrayExtra);
+            processMagicData(marker);
+        } catch (IOException e) {
+            Log.d(TAG,"unable to decode MagicData");
+            e.printStackTrace();
+        }
     }
 
-    private void processMagicData(MagicData magicData) {
-        //need to copy iset , fset and fset3 files to assets/DataNFT foler
-
-        Log.d(TAG,"Recieved some magic ");
-        markerID = mAssetCacheHelper.copyMarkerFilesToAssetAndReturnID(magicData.marker);
-        if(markerID<0){Log.d(TAG,"copying marker to asset cache failed");}
-
-
-
-        //copyMarkerFilesToAsset(magicData.marker);
-        //FileUtils.writeByteArrayToFile(new File("pathname"), myByteArray)
-        //Toast.makeText(mContext,"REcieved some magic :"+m.fset.toString(),Toast.LENGTH_LONG);
+    private void processMagicData(MagicData.Marker marker) {
+        markerID = mAssetCacheHelper.CopyAndAddMarker(marker);
+        if(markerID<0){Log.d(TAG,"unable to copy marker");}
     }
 
 
-    private void sendFrameUsingSocket(final byte[] frame) {
+
+
+    private void sendFrameToServer(final byte[] frame) {
+        byte[] imageBytes = getSuitableFormatBytes(frame);
+        mConnection.sendFrameBytes(imageBytes);
+    }
+
+    private byte[] getSuitableFormatBytes(byte[] frame) {
         final byte[] temp=frame;
-
-
         int width = mCameraWidth;
         int height = mCameraHeight;
 
@@ -194,23 +159,9 @@ public class SperoRenderer extends ARRendererGLES20 {
         YuvImage yuvImage = new YuvImage(frame, ImageFormat.NV21, width, height, null); //width : 768, height : 1280
         yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out); //width : 768, height : 1280
         final byte[] imageBytes = out.toByteArray();
-
-        if(mWebSocket==null || mWebSocket.isCancelled()){initializeWebSocket();}
-
-        WebSocket webtemp = mWebSocket.tryGet();
-        if(webtemp!=null){mWebSocket.tryGet().send(imageBytes);
-            Log.d(TAG,"trying to send bytes");
-        }
-
-
-//        Log.d(TAG,"Size of the frame is : " + imageBytes.length);
-        //      mWebSocket.send(imageBytes);
-
-
+        return  imageBytes;
 
     }
-
-
 
 
     /**
@@ -219,11 +170,9 @@ public class SperoRenderer extends ARRendererGLES20 {
     @Override
     public void draw() {
         super.draw();
-
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glFrontFace(GLES20.GL_CW);
-
         float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
 
        // doSomeTestingStuff();//delete this line later on
@@ -232,7 +181,7 @@ public class SperoRenderer extends ARRendererGLES20 {
             cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));
             mCounter=0;
         }else if(mCounter>NO_OF_FRAMES_TO_SKIP){
-            sendFrameUsingSocket(mCameraData);
+            sendFrameToServer(mCameraData);
             mCounter=0;
         }else{
             mCounter++;
@@ -250,6 +199,5 @@ public class SperoRenderer extends ARRendererGLES20 {
                 }
             }
         }
-
     }
 }

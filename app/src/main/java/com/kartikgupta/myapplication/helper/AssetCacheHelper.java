@@ -47,7 +47,7 @@ public class AssetCacheHelper {
     /*
     this method also returns the markerID
      */
-    public int copyMarkerFilesToAssetAndReturnID(MagicData.Marker marker) {
+    public int CopyAndAddMarker(MagicData.Marker marker) {
 
         int markerID=-1;
         //doSomeTestingStuff();
@@ -57,7 +57,7 @@ public class AssetCacheHelper {
             writeFileToCache(marker.fset3,marker.markerName+".fset3");
             writeFileToCache(marker.iset,marker.markerName+".iset");
 //            doSomeTestingStuff();
-             markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
+             markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/"+marker.markerName);
         } catch (IOException e) {
             e.printStackTrace();
         }
