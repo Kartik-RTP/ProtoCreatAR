@@ -1,6 +1,7 @@
 package com.kartikgupta.myapplication;
 
 import android.app.Application;
+import android.content.res.AssetManager;
 
 import org.artoolkit.ar.base.assets.AssetHelper;
 
@@ -34,6 +35,7 @@ public class CreatARApplication extends Application {
         AssetHelper assetHelper = new AssetHelper(getAssets());
         assetHelper.cacheAssetFolder(getInstance(), "Data");
         assetHelper.cacheAssetFolder(getInstance(), "DataNFT");
+
 
 
     }
