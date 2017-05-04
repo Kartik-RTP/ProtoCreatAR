@@ -6,7 +6,7 @@ import java.io.File;
  * Created by kartik on 4/5/17.
  */
 
-class InformationFiles {
+public class InformationFiles {
     File mOBJFile ;
     File mMTLFile ;
     File mTextureDirectory;

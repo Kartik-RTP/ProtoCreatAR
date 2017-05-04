@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
 import com.kartikgupta.myapplication.helper.AssetCacheHelper;
-import com.kartikgupta.myapplication.model.MarkerFiles;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,7 +53,7 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
         // so eldest represents the Least recently used item
         // before returning true , I have to delete the files representing
         // the eldest marker files from internal cache as well
-        mAssetCacheHelper.removeMarker(eldest.getValue());
+        mAssetCacheHelper.DeleteMarkerFilesFromCache(eldest.getValue());
         return size() > mSize;
     }
 

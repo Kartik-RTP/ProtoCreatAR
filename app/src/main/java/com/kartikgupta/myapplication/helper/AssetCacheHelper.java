@@ -19,9 +19,26 @@ import okio.ByteString;
  */
 
 public class AssetCacheHelper {
-    /*
+    /**
     This class object will help to add / remove  "marker" and "information" files from
     internal cache of the app at the runtime
+
+     Internal cache structure is as below : -
+
+     InternalCache
+     |------------Data
+                    |-------------
+                    |-------------
+                    |-------------models
+                                  |---------------cube.obj
+                                  |---------------cube.mtl
+                                  |---------------textures
+                                                  |------------------a.png
+     |------------DataNFT
+                    |-------------pinball.iset
+                    |-------------pinball.fset
+                    |-------------pinball.fset3
+
      */
 
     private static final String TAG = AssetCacheHelper.class.getSimpleName();
@@ -81,7 +98,54 @@ public class AssetCacheHelper {
     }
 
 
-    public void removeMarker(MarkerFiles value) {
-        //TODO:implement it
+    public void DeleteMarkerFilesFromCache(MarkerFiles markerFiles) {
+        try {
+            deleteFileFromStorage(markerFiles.getmMarkerFsetFile());
+            deleteFileFromStorage(markerFiles.getmMarkerIsetFile());
+            deleteFileFromStorage(markerFiles.getmMarkerFset3File());
+            deleteFileFromStorage(markerFiles.getmInformationFiles().getmMTLFile());
+            deleteFileFromStorage(markerFiles.getmInformationFiles().getmOBJFile());
+            deleteDirectoryAndFiles(markerFiles.getmInformationFiles().getmTextureDirectory());
+        }catch (Exception e){
+            Log.d(TAG,"unable to delete markerFiles for"+markerFiles.getMarkerName());
+            e.printStackTrace();
+        }
     }
+
+    /**
+     * Note that the following function uses file.getName() even in case the files has
+     * been deleted ...This can be a source of potential error
+     * TODO: check out the above doubt
+     * @param file
+     * @return
+     * @throws Exception
+     */
+    private boolean deleteFileFromStorage(File file) throws Exception {
+        if(!file.exists()){
+            return true;
+            //since file isn't there , we can consider delete to be a success
+        }
+        boolean result =  file.delete();
+        if(result){
+            Log.d(TAG,file.getName()+"is deleted");
+        }else {
+            Log.d(TAG,file.getName()+"is NOT deleted");
+            throw new Exception("unable to delete the "+file.getName());
+        }
+
+        return result;
+    }
+
+    private boolean deleteDirectoryAndFiles(File directoryFile) throws Exception {
+        if(directoryFile.isDirectory()){
+            for (File file : directoryFile.listFiles()){
+                deleteFileFromStorage(file);
+            }
+        }
+        boolean result = directoryFile.delete();
+        return result;
+    }
+
+
+
 }

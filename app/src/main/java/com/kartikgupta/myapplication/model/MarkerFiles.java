@@ -12,6 +12,7 @@ public class MarkerFiles {
     File mMarkerIsetFile  ;
     File mMarkerFset3File ;
     InformationFiles mInformationFiles ;
+    private String mMarkerName;
 
     MarkerFiles(){
 
@@ -47,5 +48,17 @@ public class MarkerFiles {
 
     public void setmInformationFiles(InformationFiles mInformationFiles) {
         this.mInformationFiles = mInformationFiles;
+    }
+
+    public String getMarkerName() {
+        return mMarkerName;
+    }
+
+    public String getmMarkerName() {
+        return mMarkerName;
+    }
+
+    public void setmMarkerName(String mMarkerName) {
+        this.mMarkerName = mMarkerName;
     }
 }
