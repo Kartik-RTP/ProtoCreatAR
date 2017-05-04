@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
+import com.kartikgupta.myapplication.model.MarkerFiles;
 
 import org.artoolkit.ar.base.ARToolKit;
 
@@ -80,5 +81,7 @@ public class AssetCacheHelper {
     }
 
 
-
+    public void removeMarker(MarkerFiles value) {
+        //TODO:implement it
+    }
 }

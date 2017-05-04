@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private void startCameraActivity() {
         //write code for starting camera preview
-        Intent intent = new Intent(MainActivity.this,NewMagicActivity.class);
+        Intent intent = new Intent(MainActivity.this,MagicActivity.class);
         startActivity(intent);
     }
 

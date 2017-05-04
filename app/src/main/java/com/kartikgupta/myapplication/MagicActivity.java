@@ -14,7 +14,7 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
  * Created by kartik on 17/4/17.
  */
 
-public class NewMagicActivity  extends ARActivity{
+public class MagicActivity extends ARActivity{
 
 
     @Override

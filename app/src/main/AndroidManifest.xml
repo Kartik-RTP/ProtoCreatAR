@@ -29,7 +29,7 @@
             android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
 
-        <activity android:name=".NewMagicActivity"
+        <activity android:name=".MagicActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
