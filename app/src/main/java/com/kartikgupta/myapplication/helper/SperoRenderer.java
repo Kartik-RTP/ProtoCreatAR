@@ -35,6 +35,12 @@ import javax.microedition.khronos.opengles.GL10;
 public class SperoRenderer extends ARRendererGLES20 {
 
 
+    static {
+        System.loadLibrary("c++_shared");
+        System.loadLibrary("ARWrapper");
+        System.loadLibrary("magic");
+    }
+
     private static final int NO_OF_FRAMES_TO_SKIP = 100; //this many frames get skipped before sending a frame to server
     private int markerID = -1;
     private CubeGLES20 cube;
@@ -56,7 +62,15 @@ public class SperoRenderer extends ARRendererGLES20 {
     private static final String RECIEVED_MAGIC_BYTES = "recieved_magic_bytes" ;
     private static final String MAGIC_DATA = "magic_data";
 
+    //Declaring the native methods of lbmagic.so
 
+    public static native void Initialise();
+    public static native void Shutdown();
+    public static native void SurfaceCreated();
+    public static native void SurfaceChanged(int w, int h);
+    public static native boolean DrawFrame();
+    public static native int  AddMarkerAndModel(String modelFilePath , String markerConfigStatement);
+    public static native void DeleteMarkerAndModel(int markerIndex);
 
 
 
@@ -93,17 +107,14 @@ public class SperoRenderer extends ARRendererGLES20 {
      */
     @Override
     public boolean configureARScene() {
-
-        markerID = ARToolKit.getInstance().addMarker("single;Data/hiro.patt;80");
-        //markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
-        if (markerID < 0) return false;
-
+        SperoRenderer.Initialise();
         return true;
     }
 
     @Override
     public void onSurfaceChanged(GL10 unused, int w, int h) {
         super.onSurfaceChanged(unused, w, h);
+        SperoRenderer.SurfaceChanged(w,h);
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mCameraFrameDataBroadcastRecever,
                 new IntentFilter(CAMERA_PREVIEW_FEED_INTENT));
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mMagicDataBroadcastRecever,
@@ -115,6 +126,7 @@ public class SperoRenderer extends ARRendererGLES20 {
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         super.onSurfaceCreated(unused, config);
+        SperoRenderer.SurfaceCreated();
         mConnection.initializeConnection();
 
 
@@ -170,12 +182,28 @@ public class SperoRenderer extends ARRendererGLES20 {
     @Override
     public void draw() {
         super.draw();
+        if(SperoRenderer.DrawFrame()){
+        //marker found and model drawn
+        //reset the counter
+            mCounter=0;
+        }else if(mCounter>NO_OF_FRAMES_TO_SKIP){
+            sendFrameToServer(mCameraData);
+            mCounter=0;
+        }else{
+            //increase the counter
+            mCounter++;
+        }
+
+        //depracatedDrawMethod(); //TODO : to be deleted later on
+    }
+
+    private void depracatedDrawMethod() {
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glFrontFace(GLES20.GL_CW);
         float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
 
-       // doSomeTestingStuff();//delete this line later on
+        // doSomeTestingStuff();//delete this line later on
         // If the marker is visible, apply its transformation, and render a cube
         if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
             cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));

@@ -11,6 +11,20 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    /*  The below sourceSets statement solved the following error for me
+        http://stackoverflow.com/questions/40065871/error-your-project-contains-c-files-but-it-is-not-using-a-supported-native-bu
+        It is used if we are using an already built .so file which we are using
+        as the "libmagic.so" gets created somewhere else , as it requires to be built at
+        certain directory in the artoolkit5 repository
+     */
+    sourceSets {
+        main {
+            jni.srcDirs = []
+        }
+    }
+
+
     buildTypes {
         release {
             minifyEnabled false
@@ -36,7 +50,6 @@ allprojects {
 
 
 dependencies {
-    //included arbaselib through ths statement
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
     compile 'com.android.support:design:23.3.0'
     compile 'com.koushikdutta.async:androidasync:2.1.6'
