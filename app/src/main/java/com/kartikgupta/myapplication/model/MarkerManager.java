@@ -9,7 +9,9 @@ import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
 import com.kartikgupta.myapplication.helper.AssetCacheHelper;
+import com.kartikgupta.myapplication.helper.SperoRenderer;
 
+import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -47,18 +49,32 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
     }
 
 
+
     @Override
     protected boolean removeEldestEntry(Map.Entry<Integer, MarkerFiles> eldest) {
         // so eldest represents the Least recently used item
         // before returning true , I have to delete the files representing
         // the eldest marker files from internal cache as well
+        SperoRenderer.DeleteMarkerAndModel(eldest.getKey());
         DeleteFiles(eldest.getValue()); // check if this works
         return size() > mSize;
+
     }
 
-    private void DeleteFiles(MarkerFiles value) {
+    private void DeleteFiles(MarkerFiles markerFiles) {
+            markerFiles.getmMarkerIsetFile().delete();
+            markerFiles.getmMarkerFset3File().delete();
+            markerFiles.getmMarkerFsetFile().delete();
+            markerFiles.getmInformationFiles().getmMTLFile().delete();
+            markerFiles.getmInformationFiles().getmOBJFile().delete();
+            File temp = markerFiles.getmInformationFiles().getmTextureDirectory();
+            for(File file : temp.listFiles()){
+                file.delete();
+            }
+            temp.delete();
+
         //placeholder function
-        //TODO:implement it
+        //TODO:implement proper logging
     }
 
 /*
