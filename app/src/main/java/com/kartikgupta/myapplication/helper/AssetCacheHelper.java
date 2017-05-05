@@ -4,13 +4,14 @@ import android.content.Context;
 import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
+import com.kartikgupta.myapplication.model.InformationFiles;
 import com.kartikgupta.myapplication.model.MarkerFiles;
 
 import org.artoolkit.ar.base.ARToolKit;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import okio.ByteString;
 
@@ -25,19 +26,20 @@ public class AssetCacheHelper {
 
      Internal cache structure is as below : -
 
-     InternalCache
-     |------------Data
-                    |-------------
-                    |-------------
-                    |-------------models
-                                  |---------------cube.obj
-                                  |---------------cube.mtl
-                                  |---------------textures
-                                                  |------------------a.png
-     |------------DataNFT
-                    |-------------pinball.iset
-                    |-------------pinball.fset
-                    |-------------pinball.fset3
+     CacheDirectory
+         |
+         |------------Data
+                        |-------------
+                        |-------------
+                        |-------------models
+                                      |---------------cube.obj
+                                      |---------------cube.mtl
+                                      |---------------textures
+                                                      |------------------a.png
+         |------------DataNFT
+                        |-------------pinball.iset
+                        |-------------pinball.fset
+                        |-------------pinball.fset3
 
      */
 
@@ -47,23 +49,176 @@ public class AssetCacheHelper {
     public AssetCacheHelper(Context context){
         mContext = context;
     }
-    public void copyMarkerFilesToAsset(MagicData.Marker marker) {
+
+    public MarkerFiles copyMarkerFilesAndInformationFilesToAssetAndReturnMarkerFiles(MagicData markerWithInformationData) throws Exception {
+
+        boolean markerCopied = copyMarkerFilesToAsset(markerWithInformationData.marker);
+        boolean informationCopied = copyInformationFilesToAsset(
+                                              markerWithInformationData.information,
+                                              markerWithInformationData.marker.markerName
+                                                                                );
+        if(markerCopied&&informationCopied){
+
+           MarkerFiles markerFiles =  generateMarkerFile(
+                                     markerWithInformationData.marker.markerName
+                                                                        );
+           return markerFiles;
+        }else{
+            throw new Exception("marker and information files couldn't be generated");
+        }
+
+        //return null;
+    }
+
+    private MarkerFiles generateMarkerFile(String markerName) {
+        MarkerFiles markerFiles = new MarkerFiles();
+
+        markerFiles.setmMarkerNFTFilesDirectoryFile(getDataNFTDirectoryFile());
+        markerFiles.setmMarkerFset3File(getFileFromDataNFTDirectory(markerName+".fset3"));
+        markerFiles.setmMarkerFsetFile(getFileFromDataNFTDirectory(markerName+".fset"));
+        markerFiles.setmMarkerIsetFile(getFileFromDataNFTDirectory(markerName+".iset"));
+        markerFiles.setmInformationFiles(getInformationFileFromDataDirectoryInCache(markerName));
+
+        return markerFiles;
+    }
+
+    private InformationFiles getInformationFileFromDataDirectoryInCache(String markerName) {
+        InformationFiles informationFiles = new InformationFiles();
+        File modelDirectoryInCache = getModelDirectoryFileFromCache();
+        File markerModelDirectoryInCacheFile=null;
+        for(File file : modelDirectoryInCache.listFiles()){
+            if(file.getName().toString().equals(markerName)){
+                markerModelDirectoryInCacheFile=file;
+            }
+        }
+
+        if(markerModelDirectoryInCacheFile.exists()){
+            informationFiles.setmInformationDirectory(markerModelDirectoryInCacheFile);
+        }
+
+        for(File file : markerModelDirectoryInCacheFile.listFiles()){
+            if(file.getName().toString().contains(".obj")){
+                informationFiles.setmOBJFile(file);
+            }else if(file.getName().toString().contains(".mtl")){
+                informationFiles.setmMTLFile(file);
+            }else if(file.getName().toString().equals("texture")&&file.isDirectory()){
+                informationFiles.setmTextureDirectory(file);
+            }
+        }
+
+
+        return  informationFiles;
+    }
+
+    private File getFileFromDataNFTDirectory(String fileNameWithExtension) {
+        File dataNFTDirectoryFile = getDataNFTDirectoryFile();
+        File searchFile = new File(dataNFTDirectoryFile.getAbsolutePath()+
+                                   File.separator+fileNameWithExtension);
+        if(!searchFile.exists()){
+            try {
+                throw new Exception(fileNameWithExtension+"doesn't exist");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return  searchFile;
+    }
+
+    private boolean copyInformationFilesToAsset(MagicData.Information information , String markerName) {
+
+        try{
+            writeFileToDataModelDirectoryInCache(information.mtl,markerName,markerName+".mtl");
+            writeFileToDataModelDirectoryInCache(information.obj,markerName,markerName+".obj");
+            writeFileToDataModelDirectoryInCache(information.image,markerName);
+        }catch (IOException e){
+            e.printStackTrace();
+            return false;
+
+        }
+        return true;
+    }
+
+    private void writeFileToDataModelDirectoryInCache(List<MagicData.Images> images, String markerName) throws IOException {
+        File dataModelDirectoryFile = getModelDirectoryFileFromCache();
+        File modelForMarkerDirectoryFile = new File(dataModelDirectoryFile.getAbsolutePath()
+                +File.separator+markerName);
+        if(!modelForMarkerDirectoryFile.exists()){
+            modelForMarkerDirectoryFile.mkdirs(); //create that folder
+        }
+        File textureDirectoryFile = new File(modelForMarkerDirectoryFile+File.separator+
+                                        "texture");
+        if(!textureDirectoryFile.exists()){
+            textureDirectoryFile.mkdirs(); //create that folder
+        }
+        for(MagicData.Images image:images){
+            HelperUtilities.writeDataToFile(
+                    textureDirectoryFile.getAbsolutePath()+File.separator+image.imageNameWithExtenson
+                    ,image.imagebytes.toByteArray());
+        }
+
+
+
+    }
+
+    private void writeFileToDataModelDirectoryInCache(ByteString fileData, String markerName , String fileNameWithExtension) throws IOException {
+        File dataModelDirectoryFile = getModelDirectoryFileFromCache();
+        File modelForMarkerDirectoryFile = new File(dataModelDirectoryFile.getAbsolutePath()
+                                                    +File.separator+markerName);
+        if(!modelForMarkerDirectoryFile.exists()){
+            modelForMarkerDirectoryFile.mkdirs(); //create that folder
+        }
+
+        String path = modelForMarkerDirectoryFile+File.separator+fileNameWithExtension;
+        HelperUtilities.writeDataToFile(path, fileData.toByteArray());
+    }
+
+    private File getModelDirectoryFileFromCache() {
+        File cacheDirFile = mContext.getCacheDir();
+        File dataDirectoryFile = null;
+        File dataModelDirectoryFile = null;
+        for(File file : cacheDirFile.listFiles()){
+            if(file.getName().toString().equals("Data")){
+                dataDirectoryFile   = file;
+            }
+        }
+
+        for(File file : dataDirectoryFile.listFiles()){
+            if(file.getName().toString().equals("models")){
+                dataModelDirectoryFile=file;
+            }
+        }
+        if(dataModelDirectoryFile==null){
+            dataModelDirectoryFile=createNewModelDirectory();
+        }
+        return dataModelDirectoryFile;
+    }
+
+    private File createNewModelDirectory() {
+        //TODO : implement it , creates tne model folder inside Data folder
+        //although may never be called , as we will ensure that the folder already is there
+        return null;
+    }
+
+    public boolean copyMarkerFilesToAsset(MagicData.Marker marker) {
 
         //doSomeTestingStuff();
         try {
             Log.d(TAG,"copying new marker content to cache");
-            writeFileToCache(marker.fset,marker.markerName+".fset");
-            writeFileToCache(marker.fset3,marker.markerName+".fset3");
-            writeFileToCache(marker.iset,marker.markerName+".iset");
+            writeFileToDataNFTDirectoryInCache(marker.fset,marker.markerName+".fset");
+            writeFileToDataNFTDirectoryInCache(marker.fset3,marker.markerName+".fset3");
+            writeFileToDataNFTDirectoryInCache(marker.iset,marker.markerName+".iset");
 //            doSomeTestingStuff();
     //        markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     /*
-    this method also returns the markerID
+    this method also returns the markerID.
+    this function is depracated , no longer used
      */
     public int CopyAndAddMarker(MagicData.Marker marker) {
 
@@ -71,9 +226,9 @@ public class AssetCacheHelper {
         //doSomeTestingStuff();
         try {
             Log.d(TAG,"copying new marker content to cache");
-            writeFileToCache(marker.fset,marker.markerName+".fset");
-            writeFileToCache(marker.fset3,marker.markerName+".fset3");
-            writeFileToCache(marker.iset,marker.markerName+".iset");
+            writeFileToDataNFTDirectoryInCache(marker.fset,marker.markerName+".fset");
+            writeFileToDataNFTDirectoryInCache(marker.fset3,marker.markerName+".fset3");
+            writeFileToDataNFTDirectoryInCache(marker.iset,marker.markerName+".iset");
 //            doSomeTestingStuff();
              markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/"+marker.markerName);
         } catch (IOException e) {
@@ -82,7 +237,14 @@ public class AssetCacheHelper {
         return markerID;
     }
 
-    private void writeFileToCache(ByteString fileData, String fileNameWithExtension) throws IOException {
+    private void writeFileToDataNFTDirectoryInCache(ByteString fileData, String fileNameWithExtension) throws IOException {
+
+        File dataNFTDirectoryFile = getDataNFTDirectoryFile();
+        String path = dataNFTDirectoryFile.getAbsolutePath()+File.separator+fileNameWithExtension;
+        HelperUtilities.writeDataToFile(path,fileData.toByteArray());
+    }
+
+    private File getDataNFTDirectoryFile() {
         File cacheDirFile = mContext.getCacheDir();
         File DataNFTFile = null;
         for(File file : cacheDirFile.listFiles()){
@@ -90,11 +252,7 @@ public class AssetCacheHelper {
                 DataNFTFile = file;
             }
         }
-        String path = DataNFTFile.getAbsolutePath()+File.separator+fileNameWithExtension;
-
-        FileOutputStream fos = new FileOutputStream(path);
-        fos.write(fileData.toByteArray());
-        fos.close();
+        return DataNFTFile;
     }
 
 

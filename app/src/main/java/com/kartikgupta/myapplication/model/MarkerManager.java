@@ -27,7 +27,6 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
     private int mSize; //atmax can be 10 since in libmagic.so , it has been defined so
     // if taken more than that , then error will come up
 
-    private AssetCacheHelper mAssetCacheHelper;
 
 
     public MarkerManager(int size) throws Exception {
@@ -53,33 +52,33 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
         // so eldest represents the Least recently used item
         // before returning true , I have to delete the files representing
         // the eldest marker files from internal cache as well
-        mAssetCacheHelper.DeleteMarkerFilesFromCache(eldest.getValue());
+        DeleteFiles(eldest.getValue()); // check if this works
         return size() > mSize;
     }
 
+    private void DeleteFiles(MarkerFiles value) {
+        //placeholder function
+        //TODO:implement it
+    }
+
+/*
     public void addMarker(MagicData magicData){
-        com.kartikgupta.myapplication.model.MarkerFiles markerFiles = generateMarkerFiles(magicData.marker);
+        //needs an overhaul
+        //TODO
+        MarkerFiles markerFiles = generateMarkerFiles(magicData.marker);
         InformationFiles informationFiles = generateInformationFiles(magicData.information);
         markerFiles.setmInformationFiles(informationFiles);
         int markerID = mAssetCacheHelper.CopyAndAddMarker(magicData.marker);
         if(markerID>-1){
             //means successfully added in internal ARModelArray
-            put(markerID,markerFiles);    
+            put(markerID,markerFiles);
         }else{
             Log.d(TAG,"Some error in adding marker");
         }
     }
+*/
 
 
 
-    private InformationFiles generateInformationFiles(MagicData.Information information) {
-        //TODO:implement it
-        return  new InformationFiles();
-    }
-
-    private com.kartikgupta.myapplication.model.MarkerFiles generateMarkerFiles(MagicData.Marker marker) {
-        //TODO:implement it
-        return new com.kartikgupta.myapplication.model.MarkerFiles();
-    }
 
 }

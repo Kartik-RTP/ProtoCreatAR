@@ -15,6 +15,8 @@ import com.kartikgupta.myapplication.MagicData;
 import com.kartikgupta.myapplication.helper.shader.SimpleFragmentShader;
 import com.kartikgupta.myapplication.helper.shader.SimpleShaderProgram;
 import com.kartikgupta.myapplication.helper.shader.SimpleVertexShader;
+import com.kartikgupta.myapplication.model.MarkerFiles;
+import com.kartikgupta.myapplication.model.MarkerManager;
 
 import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
@@ -54,6 +56,7 @@ public class SperoRenderer extends ARRendererGLES20 {
     private int mCameraHeight;
     private AssetCacheHelper mAssetCacheHelper ;
     private NetworkConnection mConnection;
+    private MarkerManager mMarkerManager;
 
     private static final String CAMERA_PREVIEW_FEED_INTENT = "camera_preview_feed_intent";
     private static final String CAMERA_FEED_DATA = "camera_feed_data";
@@ -98,6 +101,7 @@ public class SperoRenderer extends ARRendererGLES20 {
         mContext = context;
         mAssetCacheHelper = new AssetCacheHelper(mContext);
         mConnection = new NetworkConnection(mContext);
+        mMarkerManager = new MarkerManager();
     }
 
     /**
@@ -140,17 +144,50 @@ public class SperoRenderer extends ARRendererGLES20 {
 
     private void processMagicDataBytes(byte[] byteArrayExtra) {
         try {
-            MagicData.Marker marker = MagicData.Marker.ADAPTER.decode(byteArrayExtra);
-            processMagicData(marker);
+            MagicData magicData = MagicData.ADAPTER.decode(byteArrayExtra);
+            processMagicData(magicData);
         } catch (IOException e) {
             Log.d(TAG,"unable to decode MagicData");
             e.printStackTrace();
         }
     }
 
-    private void processMagicData(MagicData.Marker marker) {
-        markerID = mAssetCacheHelper.CopyAndAddMarker(marker);
-        if(markerID<0){Log.d(TAG,"unable to copy marker");}
+    private void processMagicData(MagicData markerWithInformationData) {
+        MarkerFiles markerFiles =null;
+        try {
+             markerFiles = mAssetCacheHelper.copyMarkerFilesAndInformationFilesToAssetAndReturnMarkerFiles(markerWithInformationData);
+        } catch (Exception e) {
+            Log.d(TAG,"unable to process magicData recieved part1");
+            e.printStackTrace();
+        }
+        if(markerFiles==null){
+            Log.d(TAG,"unable to process magicData recieved part1");
+            return;
+        }
+        String modelPath = markerFiles.
+                getmInformationFiles().
+                getmOBJFile().
+                getAbsolutePath().toString();
+        //note that right now I am not getting the OBJ file
+
+        Log.d(TAG,"Path for marker model is :" +modelPath);
+        /*
+        Note that modelPath should be for example like this
+                Data/models/Porsche_911_GT3.obj
+         */
+
+        int markerID = SperoRenderer.AddMarkerAndModel(modelPath ,
+                "nft;dataNFT/"+markerWithInformationData.marker.markerName
+                                                                ) ;
+        if(markerID>-1){
+            //Marker Successfully added internally
+            mMarkerManager.put(markerID,markerFiles);
+        }else{
+            //TODO : fill it
+         //do something about the unused marker files
+         // that have been copied but are unable to be used
+        }
+
     }
 
 

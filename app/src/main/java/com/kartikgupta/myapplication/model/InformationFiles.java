@@ -10,9 +10,18 @@ public class InformationFiles {
     File mOBJFile ;
     File mMTLFile ;
     File mTextureDirectory;
+    File mInformationDirectory; //probably will be needing only this one
 
-    InformationFiles(){
+    public InformationFiles(){
 
+    }
+
+    public File getmInformationDirectory() {
+        return mInformationDirectory;
+    }
+
+    public void setmInformationDirectory(File mInformationDirectory) {
+        this.mInformationDirectory = mInformationDirectory;
     }
 
     public File getmOBJFile() {

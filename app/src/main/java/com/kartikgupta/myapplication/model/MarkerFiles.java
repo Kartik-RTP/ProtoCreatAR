@@ -11,11 +11,20 @@ public class MarkerFiles {
     File mMarkerFsetFile  ;
     File mMarkerIsetFile  ;
     File mMarkerFset3File ;
+    File mMarkerNFTFilesDirectoryFile;
     InformationFiles mInformationFiles ;
     private String mMarkerName;
 
-    MarkerFiles(){
+    public MarkerFiles(){
 
+    }
+
+    public File getmMarkerNFTFilesDirectoryFile() {
+        return mMarkerNFTFilesDirectoryFile;
+    }
+
+    public void setmMarkerNFTFilesDirectoryFile(File mMarkerNFTFilesDirectoryFile) {
+        this.mMarkerNFTFilesDirectoryFile = mMarkerNFTFilesDirectoryFile;
     }
 
     public File getmMarkerFsetFile() {
