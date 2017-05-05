@@ -500,7 +500,7 @@ public final class MagicData extends Message<MagicData, MagicData.Builder> {
         label = WireField.Label.REQUIRED
     )
     public final ByteString imagebytes;
-      public String imageNameWithExtenson   ;//placeholder field
+      public String PLACEHOLDERimageNameWithExtenson;//placeholder field
       //to be removed after changing magic data
 
       public Images(ByteString imagebytes) {

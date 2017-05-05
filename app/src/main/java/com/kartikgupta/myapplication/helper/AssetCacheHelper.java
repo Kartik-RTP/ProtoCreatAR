@@ -152,7 +152,7 @@ public class AssetCacheHelper {
         }
         for(MagicData.Images image:images){
             HelperUtilities.writeDataToFile(
-                    textureDirectoryFile.getAbsolutePath()+File.separator+image.imageNameWithExtenson
+                    textureDirectoryFile.getAbsolutePath()+File.separator+image.PLACEHOLDERimageNameWithExtenson
                     ,image.imagebytes.toByteArray());
         }
 
