@@ -102,6 +102,7 @@ public class SperoRenderer extends ARRendererGLES20 {
         mAssetCacheHelper = new AssetCacheHelper(mContext);
         mConnection = new NetworkConnection(mContext);
         mMarkerManager = new MarkerManager();
+
     }
 
     /**

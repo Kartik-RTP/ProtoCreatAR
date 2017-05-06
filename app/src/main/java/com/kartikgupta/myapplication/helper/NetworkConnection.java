@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.LoginFilter;
 import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
@@ -61,6 +62,7 @@ public class NetworkConnection {
 
                 webSocket.setDataCallback(new DataCallback() {
                     public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
+                        Log.d(TAG,"recieved some magic");
                         System.out.println("I got some bytes!");
                         Intent intent = new Intent(RECIEVED_MAGIC_BYTES);
                         intent.putExtra(MAGIC_DATA,byteBufferList.getAllByteArray());

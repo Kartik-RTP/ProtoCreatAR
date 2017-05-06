@@ -30,6 +30,8 @@ public class MagicActivity extends ARActivity{
      */
     @Override
     protected ARRenderer supplyRenderer() {
+
+
         return new SperoRenderer(this);
     }
 

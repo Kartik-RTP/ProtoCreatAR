@@ -1,7 +1,6 @@
 package com.kartikgupta.myapplication.helper;
 
 import android.content.Context;
-import android.nfc.Tag;
 import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
@@ -72,7 +71,7 @@ public class AssetCacheHelper {
         //return null;
     }
 
-    private MarkerFiles generateMarkerFile(String markerName) {
+    private MarkerFiles generateMarkerFile(String markerName) throws Exception {
         MarkerFiles markerFiles = new MarkerFiles();
 
         markerFiles.setmMarkerNFTFilesDirectoryFile(getDataNFTDirectoryFile());
@@ -84,7 +83,7 @@ public class AssetCacheHelper {
         return markerFiles;
     }
 
-    private InformationFiles getInformationFileFromDataDirectoryInCache(String markerName) {
+    private InformationFiles getInformationFileFromDataDirectoryInCache(String markerName) throws Exception {
         InformationFiles informationFiles = new InformationFiles();
         File modelDirectoryInCache = getModelDirectoryFileFromCache();
         File markerModelDirectoryInCacheFile=null;
@@ -140,11 +139,14 @@ public class AssetCacheHelper {
             e.printStackTrace();
             return false;
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
         return true;
     }
 
-    private void writeFileToDataModelDirectoryInCache(List<MagicData.Images> images, String markerName) throws IOException {
+    private void writeFileToDataModelDirectoryInCache(List<MagicData.Images> images, String markerName) throws Exception {
         File dataModelDirectoryFile = getModelDirectoryFileFromCache();
         File modelForMarkerDirectoryFile = new File(dataModelDirectoryFile.getAbsolutePath()
                 +File.separator+markerName);
@@ -166,19 +168,41 @@ public class AssetCacheHelper {
 
     }
 
-    private void writeFileToDataModelDirectoryInCache(ByteString fileData, String markerName , String fileNameWithExtension) throws IOException {
+    private void writeFileToDataModelDirectoryInCache(ByteString fileData, String markerName , String fileNameWithExtension) throws Exception {
         File dataModelDirectoryFile = getModelDirectoryFileFromCache();
         File modelForMarkerDirectoryFile = new File(dataModelDirectoryFile.getAbsolutePath()
                                                     +File.separator+markerName);
         if(!modelForMarkerDirectoryFile.exists()){
             modelForMarkerDirectoryFile.mkdirs(); //create that folder
+        }else{
+            Log.d(TAG,"unable to find modelForMarkerDirectory");
         }
 
         String path = modelForMarkerDirectoryFile+File.separator+fileNameWithExtension;
         HelperUtilities.writeDataToFile(path, fileData.toByteArray());
     }
 
-    private File getModelDirectoryFileFromCache() {
+    private File getModelDirectoryFileFromCache() throws Exception {
+
+        File dataDirectoryFile = getDataDirectoryFile();
+        File dataModelDirectoryFile=null;
+        for(File file : dataDirectoryFile.listFiles()){
+            if(file.getName().toString().equals("models")){
+                dataModelDirectoryFile=file;
+                Log.d(TAG,"found the Data/models directory");
+            }
+        }
+        if(dataModelDirectoryFile==null){
+            dataModelDirectoryFile=createNewModelDirectory();
+        }
+        if(dataModelDirectoryFile==null){
+            Log.d(TAG,"Error in retreving Data/models directory");
+            throw new Exception("Error in retreving Data/models directory");
+        }
+        return dataModelDirectoryFile;
+    }
+
+    private File getDataDirectoryFile() throws Exception {
         File cacheDirFile = mContext.getCacheDir();
         File dataDirectoryFile = null;
         File dataModelDirectoryFile = null;
@@ -187,16 +211,11 @@ public class AssetCacheHelper {
                 dataDirectoryFile   = file;
             }
         }
-
-        for(File file : dataDirectoryFile.listFiles()){
-            if(file.getName().toString().equals("models")){
-                dataModelDirectoryFile=file;
-            }
+        if(dataDirectoryFile==null){
+            Log.d(TAG,"Error in retrieving the data directory from cache");
+            throw new Exception("Error in retrieving the data directory from cache");
         }
-        if(dataModelDirectoryFile==null){
-            dataModelDirectoryFile=createNewModelDirectory();
-        }
-        return dataModelDirectoryFile;
+        return dataDirectoryFile;
     }
 
     private File createNewModelDirectory() {
