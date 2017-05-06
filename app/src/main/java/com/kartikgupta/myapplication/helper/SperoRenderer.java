@@ -111,7 +111,7 @@ public class SperoRenderer extends ARRendererGLES20 {
      */
     @Override
     public boolean configureARScene() {
-        SperoRenderer.Initialise();
+       SperoRenderer.Initialise();
         return true;
     }
 
@@ -159,16 +159,21 @@ public class SperoRenderer extends ARRendererGLES20 {
         } catch (Exception e) {
             Log.d(TAG,"unable to process magicData recieved part1");
             e.printStackTrace();
+            return; //no point in going further
         }
         if(markerFiles==null){
-            Log.d(TAG,"unable to process magicData recieved part1");
+            Log.d(TAG,"unable to process magicData recieved part2");
             return;
+        }
+        if(markerFiles.getmInformationFiles().getmOBJFile()==null){
+            Log.d(TAG,"OBJFIle is null");
         }
         String modelPath = markerFiles.
                 getmInformationFiles().
                 getmOBJFile().
                 getAbsolutePath().toString();
-        //note that right now I am not getting the OBJ file
+        //note that right now I am not getting the OBJ file...see if path is correct
+        //should be like dataNFT/pinball
 
         Log.d(TAG,"Path for marker model is :" +modelPath);
         /*

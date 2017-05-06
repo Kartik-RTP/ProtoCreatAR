@@ -1,6 +1,7 @@
 package com.kartikgupta.myapplication.helper;
 
 import android.content.Context;
+import android.nfc.Tag;
 import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
@@ -58,6 +59,7 @@ public class AssetCacheHelper {
                                               markerWithInformationData.marker.markerName
                                                                                 );
         if(markerCopied&&informationCopied){
+            Log.d(TAG,"Successfully copied Markerfile and InformationFiles");
 
            MarkerFiles markerFiles =  generateMarkerFile(
                                      markerWithInformationData.marker.markerName
@@ -121,6 +123,10 @@ public class AssetCacheHelper {
                 e.printStackTrace();
             }
         }
+        if(searchFile==null){
+            Log.d(TAG,fileNameWithExtension+" not found in DataNFT");
+        }
+
         return  searchFile;
     }
 
@@ -152,7 +158,7 @@ public class AssetCacheHelper {
         }
         for(MagicData.Images image:images){
             HelperUtilities.writeDataToFile(
-                    textureDirectoryFile.getAbsolutePath()+File.separator+image.PLACEHOLDERimageNameWithExtenson
+                    textureDirectoryFile.getAbsolutePath()+File.separator+image.imageNameWithExtension
                     ,image.imagebytes.toByteArray());
         }
 
@@ -238,10 +244,11 @@ public class AssetCacheHelper {
     }
 
     private void writeFileToDataNFTDirectoryInCache(ByteString fileData, String fileNameWithExtension) throws IOException {
-
+        Log.d(TAG,"copying "+fileNameWithExtension+"in DataNFT");
         File dataNFTDirectoryFile = getDataNFTDirectoryFile();
         String path = dataNFTDirectoryFile.getAbsolutePath()+File.separator+fileNameWithExtension;
         HelperUtilities.writeDataToFile(path,fileData.toByteArray());
+        Log.d(TAG,"Successfully copyied "+fileNameWithExtension+"in DataNFT");
     }
 
     private File getDataNFTDirectoryFile() {

@@ -75,10 +75,20 @@ public class NetworkConnection {
 
 
     public void sendFrameBytes(byte[] imageBytes) {
-        if(mWebSocket==null || mWebSocket.isCancelled()){initializeWebSocket();}
+       // initializeWebSocket();
+       // mWebSocket.tryGet().send(imageBytes);
+
+         if(mWebSocket==null || mWebSocket.isCancelled()){initializeWebSocket();}
+
         WebSocket webtemp = mWebSocket.tryGet();
-        if(webtemp!=null){mWebSocket.tryGet().send(imageBytes);
+        webtemp.send(imageBytes);
+        webtemp.isBuffering();
+        if(webtemp!=null){
+            mWebSocket.tryGet().send(imageBytes);
+        //    webtemp.send(imageBytes);
             Log.d(TAG,"trying to send bytes");
+        }else{
+            Log.d(TAG,"webSocket is null");
         }
     }
 }

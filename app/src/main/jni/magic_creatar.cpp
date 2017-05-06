@@ -6,7 +6,7 @@
 #include <android/log.h>
 
 // Utility preprocessor directive so only one change needed if Java class name changes
-#define JNIFUNCTION_DEMO(sig) Java_magic_for_creatar_##sig //need to come up with proper name for this literal
+#define JNIFUNCTION_DEMO(sig) Java_com_kartikgupta_myapplication_helper_SperoRenderer_##sig //need to come up with proper name for this literal
 
 extern "C" {
 	JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object));
