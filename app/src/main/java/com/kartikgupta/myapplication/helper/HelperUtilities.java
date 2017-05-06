@@ -24,7 +24,9 @@ public class HelperUtilities {
     
     public static void ListFilesInDirectoryFiles(File directoryFile){
         if(directoryFile.isDirectory()){
-
+            for(File file:directoryFile.listFiles()){
+                System.out.print(file.getName()+"\n");
+            }
         }else{
             Log.d(TAG,directoryFile.getName().toString()+"isn't a directory");
         }

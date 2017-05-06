@@ -83,7 +83,7 @@ public class NetworkConnection {
          if(mWebSocket==null || mWebSocket.isCancelled()){initializeWebSocket();}
 
         WebSocket webtemp = mWebSocket.tryGet();
-        webtemp.send(imageBytes);
+//        webtemp.send(imageBytes);
         webtemp.isBuffering();
         if(webtemp!=null){
             mWebSocket.tryGet().send(imageBytes);

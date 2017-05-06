@@ -176,12 +176,15 @@ public class SperoRenderer extends ARRendererGLES20 {
         //note that right now I am not getting the OBJ file...see if path is correct
         //should be like dataNFT/pinball
 
-        Log.d(TAG,"Path for marker model is :" +modelPath);
+        Log.d(TAG,"Path for marker model obj file is :" +modelPath);
         /*
         Note that modelPath should be for example like this
                 Data/models/Porsche_911_GT3.obj
-         */
 
+        but it is coming in the form of
+        /data/data/com.kartikgupta.protocreatar/cache/DataNFT/models/pinball/pinball.obj
+         */
+       // String modelCorrectedPath =
         int markerID = SperoRenderer.AddMarkerAndModel(modelPath ,
                 "nft;dataNFT/"+markerWithInformationData.marker.markerName
                                                                 ) ;

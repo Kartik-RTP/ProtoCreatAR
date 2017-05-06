@@ -111,7 +111,7 @@ public class AssetCacheHelper {
         return  informationFiles;
     }
 
-    private File getFileFromDataNFTDirectory(String fileNameWithExtension) {
+    private File getFileFromDataNFTDirectory(String fileNameWithExtension) throws Exception {
         File dataNFTDirectoryFile = getDataNFTDirectoryFile();
         File searchFile = new File(dataNFTDirectoryFile.getAbsolutePath()+
                                    File.separator+fileNameWithExtension);
@@ -220,20 +220,30 @@ public class AssetCacheHelper {
         return dataDirectoryFile;
     }
 
-    private File createNewModelDirectory() {
-        //TODO : implement it , creates tne model folder inside Data folder
-        //although may never be called , as we will ensure that the folder already is there
-        return null;
+    private File createNewModelDirectory() throws Exception {
+        File dataDirecoryFile = getDataDirectoryFile();
+        File modelDirectory = new File(dataDirecoryFile.getAbsolutePath()+File.separator+"models");
+        if(!modelDirectory.exists()){
+            modelDirectory.mkdir();
+        }
+        return modelDirectory;
     }
 
-    public boolean copyMarkerFilesToAsset(MagicData.Marker marker) {
+    public boolean copyMarkerFilesToAsset(MagicData.Marker marker) throws Exception {
 
         //doSomeTestingStuff();
         try {
             Log.d(TAG,"copying new marker content to cache");
-            writeFileToDataNFTDirectoryInCache(marker.fset,marker.markerName+".fset");
-            writeFileToDataNFTDirectoryInCache(marker.fset3,marker.markerName+".fset3");
-            writeFileToDataNFTDirectoryInCache(marker.iset,marker.markerName+".iset");
+            try {
+                writeFileToDataNFTDirectoryInCache(marker.fset,marker.markerName+".fset");
+                writeFileToDataNFTDirectoryInCache(marker.fset3,marker.markerName+".fset3");
+                writeFileToDataNFTDirectoryInCache(marker.iset,marker.markerName+".iset");
+            } catch (Exception e) {
+                Log.d(TAG,"unable to write Files to DataNFT directory in Cache");
+                e.printStackTrace();
+                throw new Exception("unable to write Files to DataNFT directory in Cache");
+            }
+
 //            doSomeTestingStuff();
     //        markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
         } catch (IOException e) {
@@ -247,7 +257,7 @@ public class AssetCacheHelper {
     this method also returns the markerID.
     this function is depracated , no longer used
      */
-    public int CopyAndAddMarker(MagicData.Marker marker) {
+    public int CopyAndAddMarker(MagicData.Marker marker) throws Exception {
 
         int markerID=-1;
         //doSomeTestingStuff();
@@ -264,21 +274,28 @@ public class AssetCacheHelper {
         return markerID;
     }
 
-    private void writeFileToDataNFTDirectoryInCache(ByteString fileData, String fileNameWithExtension) throws IOException {
+    private void writeFileToDataNFTDirectoryInCache(ByteString fileData, String fileNameWithExtension) throws Exception {
         Log.d(TAG,"copying "+fileNameWithExtension+"in DataNFT");
         File dataNFTDirectoryFile = getDataNFTDirectoryFile();
+        if(dataNFTDirectoryFile==null){
+            throw  new Exception("unable to get DataNFTDirectoy file");
+        }
         String path = dataNFTDirectoryFile.getAbsolutePath()+File.separator+fileNameWithExtension;
         HelperUtilities.writeDataToFile(path,fileData.toByteArray());
         Log.d(TAG,"Successfully copyied "+fileNameWithExtension+"in DataNFT");
     }
 
-    private File getDataNFTDirectoryFile() {
+    private File getDataNFTDirectoryFile() throws Exception {
         File cacheDirFile = mContext.getCacheDir();
         File DataNFTFile = null;
         for(File file : cacheDirFile.listFiles()){
-            if(file.getName().toString().equals("DataNFT")){
+            if(file.getName().toString().equals("DataNFT") && file.isDirectory()){
                 DataNFTFile = file;
             }
+        }
+        if(DataNFTFile==null){
+            HelperUtilities.ListFilesInDirectoryFiles(cacheDirFile);
+            throw new Exception("unable to find DataNFT directory in Cache");
         }
         return DataNFTFile;
     }
