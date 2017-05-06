@@ -196,8 +196,9 @@ public class AssetCacheHelper {
             dataModelDirectoryFile=createNewModelDirectory();
         }
         if(dataModelDirectoryFile==null){
-            Log.d(TAG,"Error in retreving Data/models directory");
-            throw new Exception("Error in retreving Data/models directory");
+            Log.d(TAG,"Error in retreving \'Data/models\' directory");
+            HelperUtilities.ListFilesInDirectoryFiles(dataDirectoryFile);
+            throw new Exception("Error in retreving \'Data/models\' directory");
         }
         return dataModelDirectoryFile;
     }
@@ -212,8 +213,9 @@ public class AssetCacheHelper {
             }
         }
         if(dataDirectoryFile==null){
-            Log.d(TAG,"Error in retrieving the data directory from cache");
-            throw new Exception("Error in retrieving the data directory from cache");
+            Log.d(TAG,"Error in retrieving the \'Data\' directory from cache");
+            HelperUtilities.ListFilesInDirectoryFiles(cacheDirFile);
+            throw new Exception("Error in retrieving the \'Data\' directory from cache");
         }
         return dataDirectoryFile;
     }
