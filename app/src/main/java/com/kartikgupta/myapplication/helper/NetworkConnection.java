@@ -33,6 +33,8 @@ public class NetworkConnection {
 
     NetworkConnection(Context context){
         mContext=context;
+        initializeConnection();
+
     }
 
 
@@ -80,17 +82,24 @@ public class NetworkConnection {
        // initializeWebSocket();
        // mWebSocket.tryGet().send(imageBytes);
 
-         if(mWebSocket==null || mWebSocket.isCancelled()){initializeWebSocket();}
 
+         if(mWebSocket==null || mWebSocket.isCancelled()){
+            Log.d(TAG,"mWebSocket is maybe null");
+             initializeWebSocket();
+         }
+        mWebSocket.tryGet().send(imageBytes);
+/*
         WebSocket webtemp = mWebSocket.tryGet();
+
 //        webtemp.send(imageBytes);
-        webtemp.isBuffering();
+//        webtemp.isBuffering();
         if(webtemp!=null){
-            mWebSocket.tryGet().send(imageBytes);
-        //    webtemp.send(imageBytes);
+  //          mWebSocket.tryGet().send(imageBytes);
+            webtemp.send(imageBytes);
             Log.d(TAG,"trying to send bytes");
         }else{
             Log.d(TAG,"webSocket is null");
         }
+*/
     }
 }

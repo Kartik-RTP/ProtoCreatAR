@@ -27,8 +27,8 @@ typedef struct ARModel {
 	bool not_null;
 } ARModel;
 
-#define NUM_MODELS 10 //this will be the maximum number of markers that creatAR will allow to keep on app at any point of time
-static ARModel models[NUM_MODELS] = {0};
+#define NUM_MODELS 2 //this will be the maximum number of markers that creatAR will allow to keep on app at any point of time
+static ARModel models[NUM_MODELS] ;
 //TODO : checkout if the above declaration can be made dynamic somehow
 static float lightAmbient[4] = {0.1f, 0.1f, 0.1f, 1.0f};
 static float lightDiffuse[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -36,7 +36,13 @@ static float lightPosition[4] = {0.0f, 0.0f, 1.0f, 0.0f};
 
 JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object)) {
 	
-	/*
+	for(int i=0;i<NUM_MODELS;i++){
+		models[i].not_null=false;
+	}
+
+	/* SOME SAMPLE CODE FOR REFERENCE
+
+
 	const char *model0file = "Data/models/Porsche_911_GT3.obj";
 	const char *model1file = "Data/models/Ferrari_Modena_Spider.obj";
 
@@ -77,6 +83,7 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Shutdown(JNIEnv* env, jobject object)) {
 JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject object, char *modelfile , char * marker_config)) {
 	
 	int free_marker_space_index=-1;
+
 	for (int i = 0; i < NUM_MODELS; i++) {
 	    if (models[i].not_null) {
 	        free_marker_space_index = i;
@@ -96,11 +103,13 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 		LOGE("Error loading model from file '%s'.", modelfile);
 		exit(-1);
 	}
+	LOGE("just checking this function..no error..don't worry");
 	glmScale(models[free_marker_space_index].obj, 0.035f);
 	//glmRotate(models[0].obj, 3.14159f / 2.0f, 1.0f, 0.0f, 0.0f);
 	glmCreateArrays(models[free_marker_space_index].obj, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	models[free_marker_space_index].visible = false;
 	models[free_marker_space_index].not_null=true;
+
 	return free_marker_space_index;
 }
 

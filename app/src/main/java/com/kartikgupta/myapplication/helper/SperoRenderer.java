@@ -7,7 +7,7 @@ import android.content.IntentFilter;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
-import android.opengl.GLES20;
+//import android.opengl.GLES20;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -19,9 +19,10 @@ import com.kartikgupta.myapplication.model.MarkerFiles;
 import com.kartikgupta.myapplication.model.MarkerManager;
 
 import org.artoolkit.ar.base.ARToolKit;
-import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
-import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
-import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
+import org.artoolkit.ar.base.rendering.ARRenderer;
+//import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
+//import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
+//import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,7 +35,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by kartik on 17/4/17.
  */
 
-public class SperoRenderer extends ARRendererGLES20 {
+public class SperoRenderer extends ARRenderer {
 
 
     static {
@@ -45,7 +46,7 @@ public class SperoRenderer extends ARRendererGLES20 {
 
     private static final int NO_OF_FRAMES_TO_SKIP = 100; //this many frames get skipped before sending a frame to server
     private int markerID = -1;
-    private CubeGLES20 cube;
+//    private CubeGLES20 cube;
 
     private final String TAG = SperoRenderer.class.getSimpleName();
     //from arbase lib
@@ -102,7 +103,6 @@ public class SperoRenderer extends ARRendererGLES20 {
         mAssetCacheHelper = new AssetCacheHelper(mContext);
         mConnection = new NetworkConnection(mContext);
         mMarkerManager = new MarkerManager();
-
     }
 
     /**
@@ -124,6 +124,7 @@ public class SperoRenderer extends ARRendererGLES20 {
                 new IntentFilter(CAMERA_PREVIEW_FEED_INTENT));
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mMagicDataBroadcastRecever,
                 new IntentFilter(RECIEVED_MAGIC_BYTES));
+
     }
 
     //Shader calls should be within a GL thread that is onSurfaceChanged(), onSurfaceCreated() or onDrawFrame()
@@ -132,13 +133,13 @@ public class SperoRenderer extends ARRendererGLES20 {
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         super.onSurfaceCreated(unused, config);
         SperoRenderer.SurfaceCreated();
-        mConnection.initializeConnection();
+        //mConnection.initializeConnection(); //now happens inside constructor itself
 
 
-        ShaderProgram shaderProgram = new SimpleShaderProgram(new SimpleVertexShader(), new SimpleFragmentShader());
+        /*ShaderProgram shaderProgram = new SimpleShaderProgram(new SimpleVertexShader(), new SimpleFragmentShader());
         cube = new CubeGLES20(40.0f, 0.0f, 0.0f, 20.0f);
         cube.setShaderProgram(shaderProgram);
-
+        */
 
 
     }
@@ -173,21 +174,27 @@ public class SperoRenderer extends ARRendererGLES20 {
                 getmInformationFiles().
                 getmOBJFile().
                 getAbsolutePath().toString();
+
+
         //note that right now I am not getting the OBJ file...see if path is correct
         //should be like dataNFT/pinball
 
-        Log.d(TAG,"Path for marker model obj file is :" +modelPath);
+        Log.d(TAG,"Absolute Path for marker model obj file is :" +modelPath);
         /*
         Note that modelPath should be for example like this
                 Data/models/Porsche_911_GT3.obj
 
         but it is coming in the form of
-        /data/data/com.kartikgupta.protocreatar/cache/DataNFT/models/pinball/pinball.obj
+        /data/data/com.kartikgupta.protocreatar/cache/Data/models/pinball/pinball.obj
          */
-       // String modelCorrectedPath =
-        int markerID = SperoRenderer.AddMarkerAndModel(modelPath ,
-                "nft;dataNFT/"+markerWithInformationData.marker.markerName
-                                                                ) ;
+
+        String correctionRegex = "[a-zA-Z0-9//]*com.kartikgupta.protocreatar\\/cache\\/";
+        String modelCorrectedPath = modelPath.replaceFirst(correctionRegex,"");
+        Log.d(TAG,"Corrected Path for marker model obj file is :" +modelCorrectedPath);
+        String markerConfig = "nft;DataNFT/"+markerWithInformationData.marker.markerName;
+        Log.d(TAG,"Marker_config statement used is : "+markerConfig);
+        int markerID = SperoRenderer.AddMarkerAndModel(modelCorrectedPath ,
+                                                        markerConfig );
         if(markerID>-1){
             Log.d(TAG,"marker successfully added internally in native code");
             //Marker Successfully added internally
@@ -224,9 +231,12 @@ public class SperoRenderer extends ARRendererGLES20 {
     }
 
 
-    /**
-     * Override the render function from {@link ARRendererGLES20}.
+    /*
+      Override the render function from {@link ARRendererGLES20}.
      */
+
+
+    /*
     @Override
     public void draw() {
         super.draw();
@@ -244,26 +254,42 @@ public class SperoRenderer extends ARRendererGLES20 {
 
         //depracatedDrawMethod(); //TODO : to be deleted later on
     }
-
-    private void depracatedDrawMethod() {
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        GLES20.glFrontFace(GLES20.GL_CW);
-        float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
-
-        // doSomeTestingStuff();//delete this line later on
-        // If the marker is visible, apply its transformation, and render a cube
-        if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
-            cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));
+*/
+    @Override
+    public void draw(GL10 gl) {
+        super.draw(gl);
+        if(SperoRenderer.DrawFrame()){
+            //marker found and model drawn
+            //reset the counter
             mCounter=0;
         }else if(mCounter>NO_OF_FRAMES_TO_SKIP){
             sendFrameToServer(mCameraData);
             mCounter=0;
         }else{
+            //increase the counter
             mCounter++;
         }
     }
 
+    /* private void depracatedDrawMethod() {
+            GLES20.glEnable(GLES20.GL_CULL_FACE);
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+            GLES20.glFrontFace(GLES20.GL_CW);
+            float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
+
+            // doSomeTestingStuff();//delete this line later on
+            // If the marker is visible, apply its transformation, and render a cube
+            if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
+                cube.draw(projectionMatrix, ARToolKit.getInstance().queryMarkerTransformation(markerID));
+                mCounter=0;
+            }else if(mCounter>NO_OF_FRAMES_TO_SKIP){
+                sendFrameToServer(mCameraData);
+                mCounter=0;
+            }else{
+                mCounter++;
+            }
+        }
+    */
     private void doSomeTestingStuff() {
         Log.d(TAG,mContext.getCacheDir().toString());
         for(File file:mContext.getCacheDir().listFiles()){
