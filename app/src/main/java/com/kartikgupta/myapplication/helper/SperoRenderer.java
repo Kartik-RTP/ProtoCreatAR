@@ -189,9 +189,11 @@ public class SperoRenderer extends ARRendererGLES20 {
                 "nft;dataNFT/"+markerWithInformationData.marker.markerName
                                                                 ) ;
         if(markerID>-1){
+            Log.d(TAG,"marker successfully added internally in native code");
             //Marker Successfully added internally
             mMarkerManager.put(markerID,markerFiles);
         }else{
+            Log.d(TAG,"failed to add marker in static array in native code");
             //TODO : fill it
          //do something about the unused marker files
          // that have been copied but are unable to be used

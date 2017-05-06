@@ -62,6 +62,7 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
     }
 
     private void DeleteFiles(MarkerFiles markerFiles) {
+
             markerFiles.getmMarkerIsetFile().delete();
             markerFiles.getmMarkerFset3File().delete();
             markerFiles.getmMarkerFsetFile().delete();
@@ -73,7 +74,6 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
             }
             temp.delete();
 
-        //placeholder function
         //TODO:implement proper logging
     }
 
