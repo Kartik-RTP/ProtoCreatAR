@@ -113,6 +113,7 @@ public class SperoRenderer extends ARRenderer {
     @Override
     public boolean configureARScene() {
        SperoRenderer.Initialise();
+        doSomeTestingStuff();
         return true;
     }
 
@@ -291,15 +292,7 @@ public class SperoRenderer extends ARRenderer {
         }
     */
     private void doSomeTestingStuff() {
-        Log.d(TAG,mContext.getCacheDir().toString());
-        for(File file:mContext.getCacheDir().listFiles()){
-            Log.d(TAG,file.getName().toString());
-            if(file.getName().toString().equals("DataNFT")){
-                for(File file1 : file.listFiles()){
-                    Log.d(TAG,file1.getName().toString());
-                    //getting the various marker file names , now I need to see f i can write a new file to it.
-                }
-            }
-        }
+        int markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/yellow2");
+        Log.d(TAG,"the markerID for testing yellow2 add is :"+markerID);
     }
 }

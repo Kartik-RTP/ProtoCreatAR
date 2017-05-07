@@ -14,7 +14,7 @@ extern "C" {
 	JNIEXPORT void JNICALL JNIFUNCTION_DEMO(SurfaceCreated(JNIEnv* env, jobject object));
 	JNIEXPORT void JNICALL JNIFUNCTION_DEMO(SurfaceChanged(JNIEnv* env, jobject object, jint w, jint h));
 	JNIEXPORT bool JNICALL JNIFUNCTION_DEMO(DrawFrame(JNIEnv* env, jobject obj));	
-	JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject object ,  char *modelfile , char * marker_config));
+	JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject object, jstring modelfileString , jstring marker_config_string));
 	JNIEXPORT void JNICALL JNIFUNCTION_DEMO(DeleteMarkerAndModel(JNIEnv* env, jobject object , jint marker_index));
 	
 };
@@ -27,7 +27,7 @@ typedef struct ARModel {
 	bool not_null;
 } ARModel;
 
-#define NUM_MODELS 2 //this will be the maximum number of markers that creatAR will allow to keep on app at any point of time
+#define NUM_MODELS 10 //this will be the maximum number of markers that creatAR will allow to keep on app at any point of time
 static ARModel models[NUM_MODELS] ;
 //TODO : checkout if the above declaration can be made dynamic somehow
 static float lightAmbient[4] = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -36,9 +36,18 @@ static float lightPosition[4] = {0.0f, 0.0f, 1.0f, 0.0f};
 
 JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object)) {
 	
+
+
 	for(int i=0;i<NUM_MODELS;i++){
-		models[i].not_null=false;
+		
+			models[i].patternID=-1;
+	//		models[i].transformationMatrix=PUT_SOME_PLACEHOLDER_TEMPORARY_VARIABLE_HERE;
+			models[i].visible=false;
+			models[i].obj=NULL;
+			models[i].not_null=false;
+		 //mean they are null ...
 	}
+
 
 	/* SOME SAMPLE CODE FOR REFERENCE
 
@@ -80,12 +89,12 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Shutdown(JNIEnv* env, jobject object)) {
 }
 
-JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject object, char *modelfile , char * marker_config)) {
+JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject object, jstring modelfileString , jstring marker_config_string)) {
 	
 	int free_marker_space_index=-1;
 
 	for (int i = 0; i < NUM_MODELS; i++) {
-	    if (models[i].not_null) {
+	    if (models[i].not_null==false) {
 	        free_marker_space_index = i;
 	        break;
 	    }
@@ -94,22 +103,31 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 		//means no space for marker left
 		return free_marker_space_index;
 	}
+	const char *marker_config = env->GetStringUTFChars( marker_config_string, 0);
 	models[free_marker_space_index].patternID = arwAddMarker(marker_config);
+	env->ReleaseStringUTFChars(marker_config_string, marker_config);
+
+
 	arwSetMarkerOptionBool(models[free_marker_space_index].patternID, ARW_MARKER_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION, false);
 	arwSetMarkerOptionBool(models[free_marker_space_index].patternID, ARW_MARKER_OPTION_FILTERED, true);
-
+	
+	const char *modelfile = env->GetStringUTFChars( modelfileString, 0);
 	models[free_marker_space_index].obj = glmReadOBJ2(modelfile, 0, 0); // context 0, don't read textures yet.
 	if (!models[free_marker_space_index].obj) {
 		LOGE("Error loading model from file '%s'.", modelfile);
 		exit(-1);
 	}
+	env->ReleaseStringUTFChars(modelfileString, modelfile);
+	
 	LOGE("just checking this function..no error..don't worry");
+	printf("just checking this function..no error..don't worry");
 	glmScale(models[free_marker_space_index].obj, 0.035f);
 	//glmRotate(models[0].obj, 3.14159f / 2.0f, 1.0f, 0.0f, 0.0f);
 	glmCreateArrays(models[free_marker_space_index].obj, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	models[free_marker_space_index].visible = false;
 	models[free_marker_space_index].not_null=true;
 
+	
 	return free_marker_space_index;
 }
 

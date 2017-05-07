@@ -294,6 +294,7 @@ public class AssetCacheHelper {
             }
         }
         if(DataNFTFile==null){
+            Log.d(TAG,"DataNFT file not found");
             HelperUtilities.ListFilesInDirectoryFiles(cacheDirFile);
             throw new Exception("unable to find DataNFT directory in Cache");
         }
