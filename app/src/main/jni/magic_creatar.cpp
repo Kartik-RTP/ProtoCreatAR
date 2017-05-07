@@ -119,7 +119,7 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 	}
 	env->ReleaseStringUTFChars(modelfileString, modelfile);
 	
-	LOGV("just checking this function..no error..don't worry");
+//	LOGV("just checking this function..no error..don't worry");
 	//printf("just checking this function..no error..don't worry");
 	glmScale(models[free_marker_space_index].obj, 0.035f);
 	//glmRotate(models[0].obj, 3.14159f / 2.0f, 1.0f, 0.0f, 0.0f);
