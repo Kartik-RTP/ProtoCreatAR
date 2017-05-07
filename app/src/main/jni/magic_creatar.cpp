@@ -47,7 +47,25 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 			models[i].not_null=false;
 		 //mean they are null ...
 	}
+	const char *model1file = "Data/models/Ferrari_Modena_Spider.obj";
+	models[0].patternID = arwAddMarker("nft;DataNFT/pinball");
+	arwSetMarkerOptionBool(models[0].patternID, ARW_MARKER_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION, false);
+	arwSetMarkerOptionBool(models[0].patternID, ARW_MARKER_OPTION_FILTERED, true);
 
+	models[0].obj = glmReadOBJ2(model1file, 0, 0); // context 0, don't read textures yet.
+	if (!models[0].obj) {
+		LOGE("Error loading model from file '%s'.", model1file);
+		exit(-1);
+	}
+	glmScale(models[0].obj, 0.035f);
+	//glmRotate(models[0].obj, 3.14159f / 2.0f, 1.0f, 0.0f, 0.0f);
+	glmCreateArrays(models[0].obj, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
+	models[0].visible = false;
+	models[0].not_null = true;
+
+	LOGE("trying to add a marker in Initialise");
+	
+	
 
 	/* SOME SAMPLE CODE FOR REFERENCE
 

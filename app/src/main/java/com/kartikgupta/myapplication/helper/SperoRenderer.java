@@ -132,6 +132,7 @@ public class SperoRenderer extends ARRenderer {
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mMagicDataBroadcastRecever,
                 new IntentFilter(RECIEVED_MAGIC_BYTES));
 
+        doSomeTestingStuff();
     }
 
     //Shader calls should be within a GL thread that is onSurfaceChanged(), onSurfaceCreated() or onDrawFrame()
@@ -268,6 +269,7 @@ public class SperoRenderer extends ARRenderer {
         if(SperoRenderer.DrawFrame()){
             //marker found and model drawn
             //reset the counter
+            Log.d(TAG,"!!!!!!!!!!!!!!!SOME MARKER FOUND!!!!!!!!!!!!!!!!");
             mCounter=0;
         }else if(mCounter>NO_OF_FRAMES_TO_SKIP){
             sendFrameToServer(mCameraData);
