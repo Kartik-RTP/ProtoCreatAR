@@ -119,8 +119,8 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 	}
 	env->ReleaseStringUTFChars(modelfileString, modelfile);
 	
-	LOGE("just checking this function..no error..don't worry");
-	printf("just checking this function..no error..don't worry");
+	LOGV("just checking this function..no error..don't worry");
+	//printf("just checking this function..no error..don't worry");
 	glmScale(models[free_marker_space_index].obj, 0.035f);
 	//glmRotate(models[0].obj, 3.14159f / 2.0f, 1.0f, 0.0f, 0.0f);
 	glmCreateArrays(models[free_marker_space_index].obj, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
@@ -133,7 +133,9 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 
 
 JNIEXPORT void JNICALL JNIFUNCTION_DEMO(DeleteMarkerAndModel(JNIEnv* env, jobject object , jint marker_index)) {
-	models[marker_index].not_null=false; //this marker space will no longer be used
+	models[marker_index].not_null=false; 
+	arwRemoveMarker(models[marker_index].patternID);
+	//this marker space will no longer be used
 
 }
 JNIEXPORT void JNICALL JNIFUNCTION_DEMO(SurfaceCreated(JNIEnv* env, jobject object)) {

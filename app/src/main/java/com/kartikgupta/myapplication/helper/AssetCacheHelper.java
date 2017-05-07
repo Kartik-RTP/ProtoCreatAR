@@ -243,6 +243,7 @@ public class AssetCacheHelper {
                 e.printStackTrace();
                 throw new Exception("unable to write Files to DataNFT directory in Cache");
             }
+            HelperUtilities.ListFilesInDirectoryFiles(getDataNFTDirectoryFile());
 
 //            doSomeTestingStuff();
     //        markerID = ARToolKit.getInstance().addMarker("nft;DataNFT/pinball");
@@ -282,7 +283,7 @@ public class AssetCacheHelper {
         }
         String path = dataNFTDirectoryFile.getAbsolutePath()+File.separator+fileNameWithExtension;
         HelperUtilities.writeDataToFile(path,fileData.toByteArray());
-        Log.d(TAG,"Successfully copyied "+fileNameWithExtension+"in DataNFT");
+        Log.d(TAG,"Successfully copied "+fileNameWithExtension+"in DataNFT");
     }
 
     private File getDataNFTDirectoryFile() throws Exception {

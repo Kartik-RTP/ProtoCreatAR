@@ -102,7 +102,13 @@ public class SperoRenderer extends ARRenderer {
         mContext = context;
         mAssetCacheHelper = new AssetCacheHelper(mContext);
         mConnection = new NetworkConnection(mContext);
-        mMarkerManager = new MarkerManager();
+        try {
+            mMarkerManager = new MarkerManager(2);
+        } catch (Exception e) {
+            Log.d(TAG,"some problem in puttng size of marker manager = 2");
+            e.printStackTrace();
+            mMarkerManager=new MarkerManager();
+        }
     }
 
     /**
@@ -113,7 +119,7 @@ public class SperoRenderer extends ARRenderer {
     @Override
     public boolean configureARScene() {
        SperoRenderer.Initialise();
-        doSomeTestingStuff();
+       // doSomeTestingStuff();
         return true;
     }
 

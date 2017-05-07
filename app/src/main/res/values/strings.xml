@@ -2,6 +2,6 @@
     <string name="app_name">ProtoCreatAR</string>
     <string name="pref_url_key" translatable="false">url</string>
     <string name="pref_url_title" translatable="false">URL</string>
-    <string name="pref_url_default" translatable="false">ws://10.20.1.25:9999</string>
+    <string name="pref_url_default" translatable="false">ws://10.1.35.155:9999</string>
     <string name="title_activity_settings" translatable="false">Settings Activity</string>
 </resources>
