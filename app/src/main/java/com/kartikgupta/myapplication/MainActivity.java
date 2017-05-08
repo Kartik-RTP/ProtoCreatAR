@@ -48,6 +48,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import org.artoolkit.ar.base.camera.CameraPreferencesActivity;
+
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback{
 
     Button mGoButton;
@@ -76,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         return true;
     }
 
@@ -90,7 +93,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        }else if(id == R.id.camera_preference_settings){
+            startActivity(new Intent(this, CameraPreferencesActivity.class));
+            return true;
         }
+
 
         return super.onOptionsItemSelected(item);
     }

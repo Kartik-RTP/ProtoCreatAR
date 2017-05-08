@@ -6,4 +6,8 @@
         android:title="Settings"
         android:orderInCategory="100"
         app:showAsAction="never" />
+    <item android:id="@+id/camera_preference_settings"
+        android:title="CameraSettings"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
 </menu>
