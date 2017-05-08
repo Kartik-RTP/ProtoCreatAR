@@ -50,7 +50,7 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 		 //mean they are null ...
 	}
 
-	
+
 	/*const char *model1file = "Data/models/pinball/cube.obj";
 	models[0].patternID = arwAddMarker("nft;DataNFT/pinball");
 	ALOG("initialmodelFIles is :%s",model1file);
@@ -205,7 +205,10 @@ JNIEXPORT bool JNICALL JNIFUNCTION_DEMO(DrawFrame(JNIEnv* env, jobject obj)) {
 			
 			models[i].visible = arwQueryMarkerTransformation(models[i].patternID, models[i].transformationMatrix);		
 			
-			if (models[i].visible) {					
+
+			if (models[i].visible) {
+				ALOG("currently the visible markerIndex is %d",models[i].patternID);
+				ALOG("inside DrawFrame method");			
 				glLoadMatrixf(models[i].transformationMatrix);		
 				glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
 				glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
