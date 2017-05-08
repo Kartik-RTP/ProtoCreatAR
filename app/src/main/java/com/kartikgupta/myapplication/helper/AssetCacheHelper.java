@@ -74,6 +74,7 @@ public class AssetCacheHelper {
     private MarkerFiles generateMarkerFile(String markerName) throws Exception {
         MarkerFiles markerFiles = new MarkerFiles();
 
+        markerFiles.setmMarkerName(markerName);
         markerFiles.setmMarkerNFTFilesDirectoryFile(getDataNFTDirectoryFile());
         markerFiles.setmMarkerFset3File(getFileFromDataNFTDirectory(markerName+".fset3"));
         markerFiles.setmMarkerFsetFile(getFileFromDataNFTDirectory(markerName+".fset"));

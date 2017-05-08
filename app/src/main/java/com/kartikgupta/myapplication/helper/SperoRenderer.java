@@ -104,7 +104,7 @@ public class SperoRenderer extends ARRenderer {
         mAssetCacheHelper = new AssetCacheHelper(mContext);
         mConnection = new NetworkConnection(mContext);
         try {
-            mMarkerManager = new MarkerManager(2);
+            mMarkerManager = new MarkerManager(3);
         } catch (Exception e) {
             Log.d(TAG,"some problem in puttng size of marker manager = 2");
             e.printStackTrace();
@@ -227,11 +227,14 @@ public class SperoRenderer extends ARRenderer {
     }
 
     private boolean checkIfMarkerAlreadyExists(String markerName) {
-        for (MarkerFiles markerFiles : mMarkerManager.values()){
-            if(markerFiles.getMarkerName().equals(markerName)){
-                return  true;
+        if(mMarkerManager.size()>0){
+            for (Map.Entry<Integer, MarkerFiles> mapEntry : mMarkerManager.entrySet()){
+                if(mapEntry.getValue().getMarkerName().equals(markerName)){
+                    return  true;
+                }
             }
         }
+
         return false;
     }
 
