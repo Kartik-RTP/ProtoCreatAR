@@ -27,6 +27,7 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -132,7 +133,7 @@ public class SperoRenderer extends ARRenderer {
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mMagicDataBroadcastRecever,
                 new IntentFilter(RECIEVED_MAGIC_BYTES));
 
-        doSomeTestingStuff();
+       // doSomeTestingStuff();
     }
 
     //Shader calls should be within a GL thread that is onSurfaceChanged(), onSurfaceCreated() or onDrawFrame()
@@ -163,6 +164,13 @@ public class SperoRenderer extends ARRenderer {
     }
 
     private void processMagicData(MagicData markerWithInformationData) {
+        //believing that one marker correspons with one information
+        //at this stage
+
+        if(checkIfMarkerAlreadyExists(markerWithInformationData.marker.markerName)){
+            Log.d(TAG,"marker-"+markerWithInformationData.marker.markerName+"already exists");
+            return;
+        }
         MarkerFiles markerFiles =null;
         try {
              markerFiles = mAssetCacheHelper.copyMarkerFilesAndInformationFilesToAssetAndReturnMarkerFiles(markerWithInformationData);
@@ -207,6 +215,8 @@ public class SperoRenderer extends ARRenderer {
             Log.d(TAG,"marker successfully added internally in native code");
             //Marker Successfully added internally
             mMarkerManager.put(markerID,markerFiles);
+            Log.d(TAG,"marker successfully added to MarkerManager");
+
         }else{
             Log.d(TAG,"failed to add marker in static array in native code");
             //TODO : fill it
@@ -216,7 +226,14 @@ public class SperoRenderer extends ARRenderer {
 
     }
 
-
+    private boolean checkIfMarkerAlreadyExists(String markerName) {
+        for (MarkerFiles markerFiles : mMarkerManager.values()){
+            if(markerFiles.getMarkerName().equals(markerName)){
+                return  true;
+            }
+        }
+        return false;
+    }
 
 
     private void sendFrameToServer(final byte[] frame) {

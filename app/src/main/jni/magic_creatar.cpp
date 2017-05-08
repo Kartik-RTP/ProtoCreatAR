@@ -6,7 +6,9 @@
 #include <android/log.h>
 
 // Utility preprocessor directive so only one change needed if Java class name changes
-#define JNIFUNCTION_DEMO(sig) Java_com_kartikgupta_myapplication_helper_SperoRenderer_##sig //need to come up with proper name for this literal
+#define JNIFUNCTION_DEMO(sig) Java_com_kartikgupta_myapplication_helper_SperoRenderer_##sig 
+#define  LOG_TAG    "magic_creatar_cpp" 
+#define  ALOG(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 
 extern "C" {
 	JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object));
@@ -16,7 +18,7 @@ extern "C" {
 	JNIEXPORT bool JNICALL JNIFUNCTION_DEMO(DrawFrame(JNIEnv* env, jobject obj));	
 	JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject object, jstring modelfileString , jstring marker_config_string));
 	JNIEXPORT void JNICALL JNIFUNCTION_DEMO(DeleteMarkerAndModel(JNIEnv* env, jobject object , jint marker_index));
-	
+		
 };
 
 typedef struct ARModel {
@@ -47,8 +49,9 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 			models[i].not_null=false;
 		 //mean they are null ...
 	}
-	const char *model1file = "Data/models/Ferrari_Modena_Spider.obj";
+	const char *model1file = "Data/models/pinball/cube.obj";
 	models[0].patternID = arwAddMarker("nft;DataNFT/pinball");
+	ALOG("initialmodelFIles is :%s",model1file);
 	arwSetMarkerOptionBool(models[0].patternID, ARW_MARKER_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION, false);
 	arwSetMarkerOptionBool(models[0].patternID, ARW_MARKER_OPTION_FILTERED, true);
 
@@ -63,7 +66,7 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 	models[0].visible = false;
 	models[0].not_null = true;
 
-	LOGE("trying to add a marker in Initialise");
+	ALOG("trying to add a marker in Initialise");
 	
 	
 
@@ -109,6 +112,9 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Shutdown(JNIEnv* env, jobject object)) {
 
 JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject object, jstring modelfileString , jstring marker_config_string)) {
 	
+
+
+
 	int free_marker_space_index=-1;
 
 	for (int i = 0; i < NUM_MODELS; i++) {
@@ -121,22 +127,26 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 		//means no space for marker left
 		return free_marker_space_index;
 	}
-	const char *marker_config = env->GetStringUTFChars( marker_config_string, 0);
+	const char *marker_config = (*env).GetStringUTFChars( marker_config_string, NULL);
+	LOGE("[KARTIK]marker_config is : %s",marker_config);
+	ALOG("Input marker_config_String recieved is :%s",marker_config);
 	models[free_marker_space_index].patternID = arwAddMarker(marker_config);
-	env->ReleaseStringUTFChars(marker_config_string, marker_config);
+		(*env).ReleaseStringUTFChars(marker_config_string, marker_config);	
 
 
 	arwSetMarkerOptionBool(models[free_marker_space_index].patternID, ARW_MARKER_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION, false);
 	arwSetMarkerOptionBool(models[free_marker_space_index].patternID, ARW_MARKER_OPTION_FILTERED, true);
 	
-	const char *modelfile = env->GetStringUTFChars( modelfileString, 0);
+	const char *modelfile = (*env).GetStringUTFChars( modelfileString, NULL);
+	LOGE("[KARTIK]modelFile is : %s",modelfile);
+	ALOG("Input modelFIle recieved is :%s",modelfile);
 	models[free_marker_space_index].obj = glmReadOBJ2(modelfile, 0, 0); // context 0, don't read textures yet.
 	if (!models[free_marker_space_index].obj) {
 		LOGE("Error loading model from file '%s'.", modelfile);
 		exit(-1);
 	}
-	env->ReleaseStringUTFChars(modelfileString, modelfile);
-	
+	(*env).ReleaseStringUTFChars(modelfileString, modelfile);
+
 //	LOGV("just checking this function..no error..don't worry");
 	//printf("just checking this function..no error..don't worry");
 	glmScale(models[free_marker_space_index].obj, 0.035f);
@@ -145,6 +155,8 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 	models[free_marker_space_index].visible = false;
 	models[free_marker_space_index].not_null=true;
 
+	//LOGV("ReleaseStringUTFChars");
+	
 	
 	return free_marker_space_index;
 }

@@ -77,7 +77,12 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
         //TODO:implement proper logging
     }
 
-/*
+    @Override
+    public MarkerFiles put(Integer key, MarkerFiles value) {
+        return super.put(key, value);
+    }
+
+    /*
     public void addMarker(MagicData magicData){
         //needs an overhaul
         //TODO
