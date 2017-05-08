@@ -49,7 +49,9 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 			models[i].not_null=false;
 		 //mean they are null ...
 	}
-	const char *model1file = "Data/models/pinball/cube.obj";
+
+	
+	/*const char *model1file = "Data/models/pinball/cube.obj";
 	models[0].patternID = arwAddMarker("nft;DataNFT/pinball");
 	ALOG("initialmodelFIles is :%s",model1file);
 	arwSetMarkerOptionBool(models[0].patternID, ARW_MARKER_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION, false);
@@ -68,7 +70,7 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 
 	ALOG("trying to add a marker in Initialise");
 	
-	
+	*/
 
 	/* SOME SAMPLE CODE FOR REFERENCE
 
