@@ -169,9 +169,10 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 
 
 JNIEXPORT void JNICALL JNIFUNCTION_DEMO(DeleteMarkerAndModel(JNIEnv* env, jobject object , jint marker_index)) {
-	models[marker_index].not_null=false; 
-	models[marker_index].obj=NULL;
+	models[marker_index].not_null=false;
 	arwRemoveMarker(models[marker_index].patternID);
+	glmDelete(models[marker_index].obj, 0); 
+	models[marker_index].obj=NULL;
 	//this marker space will no longer be used
 
 }

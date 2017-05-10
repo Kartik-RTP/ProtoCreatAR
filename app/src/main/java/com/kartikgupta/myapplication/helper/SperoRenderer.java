@@ -151,7 +151,6 @@ public class SperoRenderer extends ARRenderer {
         cube.setShaderProgram(shaderProgram);
         */
 
-
     }
 
     private void processMagicDataBytes(byte[] byteArrayExtra) {
@@ -173,14 +172,15 @@ public class SperoRenderer extends ARRenderer {
     }
 
     private void addMarker(MagicData markerWithInformationData) {
-        if( MarkerManagerLock.mIsMarkerManagerLocked
-                ||
-                checkIfMarkerAlreadyExists(markerWithInformationData.marker.markerName)
-                ){
+        lockMarkerManager();
+
+        if( checkIfMarkerAlreadyExists(markerWithInformationData.marker.markerName) ){
             Log.d(TAG,"marker-"+markerWithInformationData.marker.markerName+"already exists");
+            releaseMarkerManager();
             return;
         }
-        MarkerManagerLock.mIsMarkerManagerLocked=true;
+
+
         MarkerFiles markerFiles =null;
         try {
              markerFiles = mAssetCacheHelper.copyMarkerFilesAndInformationFilesToAssetAndReturnMarkerFiles(markerWithInformationData);
@@ -219,9 +219,9 @@ public class SperoRenderer extends ARRenderer {
         Log.d(TAG,"Corrected Path for marker model obj file is :" +modelCorrectedPath);
         String markerConfig = "nft;DataNFT/"+markerWithInformationData.marker.markerName;
         Log.d(TAG,"Marker_config statement used is : "+markerConfig);
-        //int markerID = SperoRenderer.AddMarkerAndModel(modelCorrectedPath ,
-            //                                            markerConfig );
-        int markerID = 0;
+        int markerID = SperoRenderer.AddMarkerAndModel(modelCorrectedPath ,
+                                                        markerConfig );
+
         if(markerID>-1){
             Log.d(TAG,"marker successfully added internally in native code");
             //Marker Successfully added internally
@@ -234,8 +234,16 @@ public class SperoRenderer extends ARRenderer {
          //do something about the unused marker files
          // that have been copied but are unable to be used
         }
-        MarkerManagerLock.mIsMarkerManagerLocked=false;
+        releaseMarkerManager();
 
+    }
+
+    private void releaseMarkerManager() {
+        MarkerManagerLock.mIsMarkerManagerLocked=false;
+    }
+
+    private void lockMarkerManager() {
+        MarkerManagerLock.mIsMarkerManagerLocked= true;
     }
 
     private boolean checkIfMarkerAlreadyExists(String markerName) {

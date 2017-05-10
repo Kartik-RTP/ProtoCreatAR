@@ -6,7 +6,9 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.kartikgupta.myapplication.MarkerManagerLock;
 import com.kartikgupta.myapplication.R;
+import com.kartikgupta.myapplication.model.MarkerManager;
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
 import com.koushikdutta.async.callback.DataCallback;
@@ -62,10 +64,15 @@ public class NetworkConnection {
                 webSocket.setDataCallback(new DataCallback() {
                     public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
                         Log.d(TAG,"recieved some magic");
-                        System.out.println("I got some bytes!");
-                        Intent intent = new Intent(RECIEVED_MAGIC_BYTES);
-                        intent.putExtra(MAGIC_DATA,byteBufferList.getAllByteArray());
-                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                        if(MarkerManagerLock.mIsMarkerManagerLocked){
+                            //marker manager is already working , its locked
+                            //don't process magicData as its already being processed'
+                            //therefore no need to do processing of duplicate data
+                        }else{
+                            Intent intent = new Intent(RECIEVED_MAGIC_BYTES);
+                            intent.putExtra(MAGIC_DATA,byteBufferList.getAllByteArray());
+                            LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                        }
                         // note that this data has been read
                         byteBufferList.recycle();
                     }
