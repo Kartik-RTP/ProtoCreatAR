@@ -51,7 +51,8 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 	}
 
 
-	/*const char *model1file = "Data/models/pinball/cube.obj";
+	//const char *model1file = "Data/models/pinball/cube.obj";
+	const char *model1file = "Data/models/Ferrari_Modena_Spider.obj";
 	models[0].patternID = arwAddMarker("nft;DataNFT/pinball");
 	ALOG("initialmodelFIles is :%s",model1file);
 	arwSetMarkerOptionBool(models[0].patternID, ARW_MARKER_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION, false);
@@ -70,7 +71,7 @@ JNIEXPORT void JNICALL JNIFUNCTION_DEMO(Initialise(JNIEnv* env, jobject object))
 
 	ALOG("trying to add a marker in Initialise");
 	
-	*/
+	
 
 	/* SOME SAMPLE CODE FOR REFERENCE
 
@@ -132,7 +133,10 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 	const char *marker_config = (*env).GetStringUTFChars( marker_config_string, NULL);
 	LOGE("[KARTIK]marker_config is : %s",marker_config);
 	ALOG("Input marker_config_String recieved is :%s",marker_config);
+
 	models[free_marker_space_index].patternID = arwAddMarker(marker_config);
+	ALOG("markerID upon addition is  :%d",models[free_marker_space_index].patternID);
+
 		(*env).ReleaseStringUTFChars(marker_config_string, marker_config);	
 
 
@@ -159,13 +163,14 @@ JNIEXPORT int JNICALL JNIFUNCTION_DEMO(AddMarkerAndModel(JNIEnv* env, jobject ob
 
 	//LOGV("ReleaseStringUTFChars");
 	
-	
+
 	return free_marker_space_index;
 }
 
 
 JNIEXPORT void JNICALL JNIFUNCTION_DEMO(DeleteMarkerAndModel(JNIEnv* env, jobject object , jint marker_index)) {
 	models[marker_index].not_null=false; 
+	models[marker_index].obj=NULL;
 	arwRemoveMarker(models[marker_index].patternID);
 	//this marker space will no longer be used
 

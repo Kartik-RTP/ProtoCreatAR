@@ -12,6 +12,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.kartikgupta.myapplication.MagicData;
+import com.kartikgupta.myapplication.MarkerManagerLock;
 import com.kartikgupta.myapplication.helper.shader.SimpleFragmentShader;
 import com.kartikgupta.myapplication.helper.shader.SimpleShaderProgram;
 import com.kartikgupta.myapplication.helper.shader.SimpleVertexShader;
@@ -45,7 +46,7 @@ public class SperoRenderer extends ARRenderer {
         System.loadLibrary("magic");
     }
 
-    private static final int NO_OF_FRAMES_TO_SKIP = 100; //this many frames get skipped before sending a frame to server
+    private static final int NO_OF_FRAMES_TO_SKIP = 200; //this many frames get skipped before sending a frame to server
     private int markerID = -1;
 //    private CubeGLES20 cube;
 
@@ -167,10 +168,19 @@ public class SperoRenderer extends ARRenderer {
         //believing that one marker correspons with one information
         //at this stage
 
-        if(checkIfMarkerAlreadyExists(markerWithInformationData.marker.markerName)){
+        addMarker(markerWithInformationData);
+
+    }
+
+    private void addMarker(MagicData markerWithInformationData) {
+        if( MarkerManagerLock.mIsMarkerManagerLocked
+                ||
+                checkIfMarkerAlreadyExists(markerWithInformationData.marker.markerName)
+                ){
             Log.d(TAG,"marker-"+markerWithInformationData.marker.markerName+"already exists");
             return;
         }
+        MarkerManagerLock.mIsMarkerManagerLocked=true;
         MarkerFiles markerFiles =null;
         try {
              markerFiles = mAssetCacheHelper.copyMarkerFilesAndInformationFilesToAssetAndReturnMarkerFiles(markerWithInformationData);
@@ -209,8 +219,9 @@ public class SperoRenderer extends ARRenderer {
         Log.d(TAG,"Corrected Path for marker model obj file is :" +modelCorrectedPath);
         String markerConfig = "nft;DataNFT/"+markerWithInformationData.marker.markerName;
         Log.d(TAG,"Marker_config statement used is : "+markerConfig);
-        int markerID = SperoRenderer.AddMarkerAndModel(modelCorrectedPath ,
-                                                        markerConfig );
+        //int markerID = SperoRenderer.AddMarkerAndModel(modelCorrectedPath ,
+            //                                            markerConfig );
+        int markerID = 0;
         if(markerID>-1){
             Log.d(TAG,"marker successfully added internally in native code");
             //Marker Successfully added internally
@@ -223,6 +234,7 @@ public class SperoRenderer extends ARRenderer {
          //do something about the unused marker files
          // that have been copied but are unable to be used
         }
+        MarkerManagerLock.mIsMarkerManagerLocked=false;
 
     }
 
@@ -234,6 +246,7 @@ public class SperoRenderer extends ARRenderer {
                 }
             }
         }
+
 
         return false;
     }
@@ -259,30 +272,6 @@ public class SperoRenderer extends ARRenderer {
     }
 
 
-    /*
-      Override the render function from {@link ARRendererGLES20}.
-     */
-
-
-    /*
-    @Override
-    public void draw() {
-        super.draw();
-        if(SperoRenderer.DrawFrame()){
-        //marker found and model drawn
-        //reset the counter
-            mCounter=0;
-        }else if(mCounter>NO_OF_FRAMES_TO_SKIP){
-            sendFrameToServer(mCameraData);
-            mCounter=0;
-        }else{
-            //increase the counter
-            mCounter++;
-        }
-
-        //depracatedDrawMethod(); //TODO : to be deleted later on
-    }
-*/
     @Override
     public void draw(GL10 gl) {
         super.draw(gl);

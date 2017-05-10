@@ -69,10 +69,13 @@ public class MarkerManager extends LinkedHashMap<Integer,MarkerFiles> {
             markerFiles.getmInformationFiles().getmMTLFile().delete();
             markerFiles.getmInformationFiles().getmOBJFile().delete();
             File temp = markerFiles.getmInformationFiles().getmTextureDirectory();
-            for(File file : temp.listFiles()){
-                file.delete();
+            if(temp!=null && temp.isDirectory()){
+                for(File file : temp.listFiles()){
+                    file.delete();
+                }
+                temp.delete();
             }
-            temp.delete();
+
 
         //TODO:implement proper logging
     }
